@@ -109,11 +109,6 @@ func show_confirmation_dialog() -> void:
 	)
 	hbox.add_child(open_dir_btn)
 
-	var info_label := Label.new()
-	info_label.text = "Tip: Uncheck items to keep them"
-	info_label.add_theme_color_override("font_color", base.get_theme_color("font_disabled_color", "Editor"))
-	hbox.add_child(info_label)
-
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(spacer)
@@ -153,7 +148,6 @@ func show_confirmation_dialog() -> void:
 	root.set_checked(0, true)
 	root.set_editable(0, true)
 	root.set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER)
-	root.set_tooltip_text(0, "Tip: Uncheck items to keep them")
 	root.set_text(1, "user://")
 	root.set_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
 	root.set_icon_modulate(1, Color.hex(0xE0A55CFF))
@@ -204,7 +198,6 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 		item.set_checked(0, true)
 		item.set_editable(0, true)
 		item.set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER)
-		item.set_tooltip_text(0, "Tip: Uncheck items to keep them")
 		item.set_text(1, file_name)
 
 		if dir.current_is_dir():
@@ -299,7 +292,6 @@ func _on_refresh_tree() -> void:
 	root.set_checked(0, true)
 	root.set_editable(0, true)
 	root.set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER)
-	root.set_tooltip_text(0, "Tip: Uncheck items to keep them")
 	root.set_text(1, "user://")
 	root.set_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
 	root.set_icon_modulate(1, Color.hex(0xE0A55CFF))
