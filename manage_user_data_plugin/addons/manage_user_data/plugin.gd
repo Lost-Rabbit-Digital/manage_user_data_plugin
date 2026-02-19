@@ -662,6 +662,8 @@ func _on_help_pressed() -> void:
 	help_dialog.title = "About Manage User Data"
 	help_dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS
 	help_dialog.min_size = Vector2i(640, 480)
+	help_dialog.size = Vector2i(640, 480)
+	help_dialog.exclusive = false
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
