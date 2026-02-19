@@ -7,6 +7,7 @@ var tree: Tree
 var search_text: LineEdit
 var filter_option: OptionButton
 var warning_label: Label
+var select_all_checkbox: CheckBox
 
 
 func _enter_tree() -> void:
@@ -86,21 +87,11 @@ func show_confirmation_dialog() -> void:
 	var hbox := HBoxContainer.new()
 	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var select_all_btn := Button.new()
-	select_all_btn.text = "Select All"
-	select_all_btn.pressed.connect(_on_select_all)
-	hbox.add_child(select_all_btn)
-
-	var deselect_all_btn := Button.new()
-	deselect_all_btn.text = "Deselect All"
-	deselect_all_btn.pressed.connect(_on_deselect_all)
-	hbox.add_child(deselect_all_btn)
-
-	var refresh_btn := Button.new()
-	refresh_btn.text = "Refresh"
-	refresh_btn.icon = base.get_theme_icon("Reload", "EditorIcons")
-	refresh_btn.pressed.connect(_on_refresh_tree)
-	hbox.add_child(refresh_btn)
+	select_all_checkbox = CheckBox.new()
+	select_all_checkbox.text = "Select All"
+	select_all_checkbox.button_pressed = true
+	select_all_checkbox.toggled.connect(_on_select_all_checkbox_toggled)
+	hbox.add_child(select_all_checkbox)
 
 	var open_dir_btn := Button.new()
 	open_dir_btn.text = "Open User Dir"
@@ -111,9 +102,21 @@ func show_confirmation_dialog() -> void:
 	)
 	hbox.add_child(open_dir_btn)
 
+	var info_label := Label.new()
+	info_label.text = "Tip: Uncheck items to keep them"
+	info_label.add_theme_color_override("font_color", base.get_theme_color("font_disabled_color", "Editor"))
+	hbox.add_child(info_label)
+
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(spacer)
+
+	var refresh_btn := Button.new()
+	refresh_btn.icon = base.get_theme_icon("Reload", "EditorIcons")
+	refresh_btn.tooltip_text = "Refresh"
+	refresh_btn.flat = true
+	refresh_btn.pressed.connect(_on_refresh_tree)
+	hbox.add_child(refresh_btn)
 
 	vbox.add_child(hbox)
 
@@ -233,20 +236,45 @@ func propagate_check_state(item: TreeItem, checked: bool) -> void:
 		child = child.get_next()
 
 
-func _on_select_all() -> void:
+func _on_select_all_checkbox_toggled(checked: bool) -> void:
 	var root := tree.get_root()
 	if root:
-		root.set_checked(0, true)
-		propagate_check_state(root, true)
+		root.set_checked(0, checked)
+		propagate_check_state(root, checked)
 		update_warning_label()
 
 
-func _on_deselect_all() -> void:
+## Syncs the select-all checkbox visual state to reflect current tree selection.
+func _update_select_all_checkbox() -> void:
+	if select_all_checkbox == null or tree == null:
+		return
 	var root := tree.get_root()
-	if root:
-		root.set_checked(0, false)
-		propagate_check_state(root, false)
-		update_warning_label()
+	if root == null:
+		return
+	var counts := [0, 0]  # [total, checked]
+	_count_tree_items(root, counts)
+	select_all_checkbox.set_block_signals(true)
+	if counts[1] == 0:
+		select_all_checkbox.button_pressed = false
+		select_all_checkbox.indeterminate = false
+	elif counts[1] == counts[0]:
+		select_all_checkbox.button_pressed = true
+		select_all_checkbox.indeterminate = false
+	else:
+		select_all_checkbox.button_pressed = false
+		select_all_checkbox.indeterminate = true
+	select_all_checkbox.set_block_signals(false)
+
+
+## Counts total and checked tree items recursively into [param counts] ([total, checked]).
+func _count_tree_items(item: TreeItem, counts: Array) -> void:
+	counts[0] += 1
+	if item.is_checked(0):
+		counts[1] += 1
+	var child := item.get_first_child()
+	while child != null:
+		_count_tree_items(child, counts)
+		child = child.get_next()
 
 
 ## Clears and repopulates the tree to reflect the current state of user://.
@@ -308,6 +336,8 @@ func update_warning_label() -> void:
 		warning_label.add_theme_color_override(
 			"font_color", base.get_theme_color("error_color", "Editor")
 		)
+
+	_update_select_all_checkbox()
 
 
 ## Collects checked items and accumulates size/count statistics.
@@ -468,6 +498,7 @@ func _on_dialog_closed() -> void:
 	if confirmation_dialog:
 		confirmation_dialog.queue_free()
 		confirmation_dialog = null
+		select_all_checkbox = null
 
 
 ## Deletes all checked items, deepest paths first to avoid parent-before-child issues.
