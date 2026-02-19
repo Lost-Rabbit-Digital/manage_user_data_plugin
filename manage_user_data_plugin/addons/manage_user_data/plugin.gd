@@ -628,6 +628,16 @@ func _on_help_pressed() -> void:
 	)
 	vbox.add_child(credit_label)
 
+	var discord_btn := Button.new()
+	discord_btn.text = "Join us on Discord"
+	discord_btn.icon = base.get_theme_icon("ExternalLink", "EditorIcons")
+	discord_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	discord_btn.tooltip_text = "https://discord.gg/Y7caBf7gBj"
+	discord_btn.pressed.connect(func() -> void:
+		OS.shell_open("https://discord.gg/Y7caBf7gBj")
+	)
+	vbox.add_child(discord_btn)
+
 	help_dialog.add_child(vbox)
 	EditorInterface.get_base_control().add_child(help_dialog)
 	help_dialog.popup_centered()
