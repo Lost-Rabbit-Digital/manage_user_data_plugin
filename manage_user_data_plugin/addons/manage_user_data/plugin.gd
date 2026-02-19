@@ -258,13 +258,16 @@ func _update_select_all_checkbox() -> void:
 	select_all_checkbox.set_block_signals(true)
 	if counts[1] == 0:
 		select_all_checkbox.button_pressed = false
-		select_all_checkbox.indeterminate = false
+		if "indeterminate" in select_all_checkbox:
+			select_all_checkbox.set("indeterminate", false)
 	elif counts[1] == counts[0]:
 		select_all_checkbox.button_pressed = true
-		select_all_checkbox.indeterminate = false
+		if "indeterminate" in select_all_checkbox:
+			select_all_checkbox.set("indeterminate", false)
 	else:
 		select_all_checkbox.button_pressed = false
-		select_all_checkbox.indeterminate = true
+		if "indeterminate" in select_all_checkbox:
+			select_all_checkbox.set("indeterminate", true)
 	select_all_checkbox.set_block_signals(false)
 
 
