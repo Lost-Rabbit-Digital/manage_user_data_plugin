@@ -51,8 +51,8 @@ func show_confirmation_dialog() -> void:
 	confirmation_dialog = ConfirmationDialog.new()
 	confirmation_dialog.title = "Manage User Directory Contents" + (" v" + plugin_version if plugin_version else "")
 	confirmation_dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS
-	confirmation_dialog.size = Vector2i(700, 550)
-	confirmation_dialog.min_size = Vector2i(500, 400)
+	confirmation_dialog.size = Vector2i(780, 580)
+	confirmation_dialog.min_size = Vector2i(540, 420)
 	confirmation_dialog.wrap_controls = true
 	confirmation_dialog.get_ok_button().text = "Delete Selected"
 	confirmation_dialog.get_ok_button().icon = base.get_theme_icon("Remove", "EditorIcons")
@@ -60,30 +60,30 @@ func show_confirmation_dialog() -> void:
 	var vbox := VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 0)
 
-	# Search and filter row
+	# === SEARCH ROW (Gmail-style prominent search bar) ===
 	var search_hbox := HBoxContainer.new()
 	search_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	search_hbox.add_theme_constant_override("separation", 4)
 
-	var search_label := Label.new()
-	search_label.text = "Search:"
-	search_hbox.add_child(search_label)
+	var search_icon := TextureRect.new()
+	search_icon.texture = base.get_theme_icon("Search", "EditorIcons")
+	search_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	search_icon.custom_minimum_size = Vector2(20, 20)
+	search_hbox.add_child(search_icon)
 
 	search_text = LineEdit.new()
-	search_text.placeholder_text = "Filter by name..."
-	search_text.custom_minimum_size = Vector2(200, 0)
+	search_text.placeholder_text = "Search files and folders..."
 	search_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	search_text.clear_button_enabled = true
 	search_text.text_changed.connect(_on_search_changed)
 	search_hbox.add_child(search_text)
 
-	var filter_label := Label.new()
-	filter_label.text = "Type:"
-	search_hbox.add_child(filter_label)
-
 	filter_menu_button = MenuButton.new()
-	filter_menu_button.text = "All"
+	filter_menu_button.text = "All Types"
 	filter_menu_button.flat = false
+	filter_menu_button.tooltip_text = "Filter by file type"
 	var popup := filter_menu_button.get_popup()
 	popup.hide_on_checkable_item_selection = false
 	popup.add_check_item("Files Only", 1)
@@ -96,62 +96,83 @@ func show_confirmation_dialog() -> void:
 	popup.set_item_icon(3, base.get_theme_icon("File", "EditorIcons"))
 	popup.id_pressed.connect(_on_filter_type_toggled)
 	search_hbox.add_child(filter_menu_button)
-	_apply_outline_to_button(filter_menu_button, base)
 
 	clear_filter_btn = Button.new()
-	clear_filter_btn.text = "Clear"
-	clear_filter_btn.icon = base.get_theme_icon("Clear", "EditorIcons")
+	clear_filter_btn.icon = base.get_theme_icon("Close", "EditorIcons")
+	clear_filter_btn.tooltip_text = "Clear filters"
+	clear_filter_btn.flat = true
 	clear_filter_btn.pressed.connect(_on_clear_filters)
 	clear_filter_btn.visible = false
 	search_hbox.add_child(clear_filter_btn)
 
-	vbox.add_child(search_hbox)
-
-	# Action buttons row
-	var hbox := HBoxContainer.new()
-	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-	select_all_checkbox = CheckBox.new()
-	select_all_checkbox.text = "Select All"
-	select_all_checkbox.button_pressed = true
-	select_all_checkbox.toggled.connect(_on_select_all_checkbox_toggled)
-	hbox.add_child(select_all_checkbox)
-	_apply_outline_to_button(select_all_checkbox, base)
-
-	var open_dir_btn := Button.new()
-	open_dir_btn.text = "Open User Dir"
-	open_dir_btn.icon = base.get_theme_icon("Folder", "EditorIcons")
-	open_dir_btn.tooltip_text = "Open user:// directory in file explorer"
-	open_dir_btn.pressed.connect(func() -> void:
-		OS.shell_show_in_file_manager(ProjectSettings.globalize_path("user://"))
-	)
-	hbox.add_child(open_dir_btn)
-
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(spacer)
-
 	var refresh_btn := Button.new()
 	refresh_btn.icon = base.get_theme_icon("Reload", "EditorIcons")
 	refresh_btn.tooltip_text = "Refresh"
-	refresh_btn.flat = false
+	refresh_btn.flat = true
 	refresh_btn.pressed.connect(_on_refresh_tree)
-	hbox.add_child(refresh_btn)
+	search_hbox.add_child(refresh_btn)
 
 	var help_btn := Button.new()
 	help_btn.text = "?"
 	help_btn.tooltip_text = "Help"
-	help_btn.flat = false
+	help_btn.flat = true
 	help_btn.pressed.connect(_on_help_pressed)
-	hbox.add_child(help_btn)
+	search_hbox.add_child(help_btn)
 
-	vbox.add_child(hbox)
+	var search_margin := MarginContainer.new()
+	search_margin.add_theme_constant_override("margin_left", 4)
+	search_margin.add_theme_constant_override("margin_right", 4)
+	search_margin.add_theme_constant_override("margin_top", 6)
+	search_margin.add_theme_constant_override("margin_bottom", 6)
+	search_margin.add_child(search_hbox)
+	vbox.add_child(search_margin)
 
-	# Directory tree
+	vbox.add_child(HSeparator.new())
+
+	# === TOOLBAR ROW (Gmail-style action bar: select-all + actions) ===
+	var toolbar_hbox := HBoxContainer.new()
+	toolbar_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	toolbar_hbox.add_theme_constant_override("separation", 6)
+
+	select_all_checkbox = CheckBox.new()
+	select_all_checkbox.text = "Select All"
+	select_all_checkbox.tooltip_text = "Select or deselect all visible items"
+	select_all_checkbox.button_pressed = true
+	select_all_checkbox.toggled.connect(_on_select_all_checkbox_toggled)
+	toolbar_hbox.add_child(select_all_checkbox)
+
+	var toolbar_sep_v := VSeparator.new()
+	toolbar_hbox.add_child(toolbar_sep_v)
+
+	var open_dir_btn := Button.new()
+	open_dir_btn.text = "Open Folder"
+	open_dir_btn.icon = base.get_theme_icon("Folder", "EditorIcons")
+	open_dir_btn.tooltip_text = "Open user:// directory in file explorer"
+	open_dir_btn.flat = false
+	open_dir_btn.pressed.connect(func() -> void:
+		OS.shell_show_in_file_manager(ProjectSettings.globalize_path("user://"))
+	)
+	toolbar_hbox.add_child(open_dir_btn)
+
+	var toolbar_spacer := Control.new()
+	toolbar_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	toolbar_hbox.add_child(toolbar_spacer)
+
+	var toolbar_margin := MarginContainer.new()
+	toolbar_margin.add_theme_constant_override("margin_left", 4)
+	toolbar_margin.add_theme_constant_override("margin_right", 4)
+	toolbar_margin.add_theme_constant_override("margin_top", 4)
+	toolbar_margin.add_theme_constant_override("margin_bottom", 4)
+	toolbar_margin.add_child(toolbar_hbox)
+	vbox.add_child(toolbar_margin)
+
+	vbox.add_child(HSeparator.new())
+
+	# === FILE TREE ===
 	tree = Tree.new()
 	tree.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	tree.custom_minimum_size = Vector2(0, 300)
+	tree.custom_minimum_size = Vector2(0, 280)
 	tree.hide_root = false
 	tree.set_columns(3)
 	tree.set_column_title(0, "")
@@ -161,11 +182,11 @@ func show_confirmation_dialog() -> void:
 	tree.set_column_expand(0, false)
 	tree.set_column_expand(1, true)
 	tree.set_column_expand(2, true)
-	tree.set_column_custom_minimum_width(0, 40)
+	tree.set_column_custom_minimum_width(0, 36)
 	tree.set_column_custom_minimum_width(1, 200)
-	tree.set_column_custom_minimum_width(2, 100)
+	tree.set_column_custom_minimum_width(2, 110)
 	tree.set_column_expand_ratio(0, 0)
-	tree.set_column_expand_ratio(1, 4)
+	tree.set_column_expand_ratio(1, 5)
 	tree.set_column_expand_ratio(2, 1)
 
 	var root := tree.create_item()
@@ -186,11 +207,21 @@ func show_confirmation_dialog() -> void:
 	tree.item_edited.connect(_on_tree_item_edited)
 	vbox.add_child(tree)
 
-	# Warning / status label
+	vbox.add_child(HSeparator.new())
+
+	# === STATUS / WARNING BAR ===
 	warning_label = Label.new()
-	warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	warning_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_child(warning_label)
+	warning_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+
+	var status_margin := MarginContainer.new()
+	status_margin.add_theme_constant_override("margin_left", 6)
+	status_margin.add_theme_constant_override("margin_right", 6)
+	status_margin.add_theme_constant_override("margin_top", 4)
+	status_margin.add_theme_constant_override("margin_bottom", 4)
+	status_margin.add_child(warning_label)
+	vbox.add_child(status_margin)
 
 	update_warning_label()
 
@@ -369,21 +400,21 @@ func update_warning_label() -> void:
 	var base := EditorInterface.get_base_control()
 
 	if items_to_delete.is_empty():
-		warning_label.text = "No items selected for deletion."
+		warning_label.text = "No items selected."
 		warning_label.add_theme_color_override(
 			"font_color", base.get_theme_color("font_disabled_color", "Editor")
 		)
 	else:
 		var items_text: String
 		if file_count_ref[0] > 0 and folder_count_ref[0] > 0:
-			items_text = "%d files and %d folders" % [file_count_ref[0], folder_count_ref[0]]
+			items_text = "%d files, %d folders" % [file_count_ref[0], folder_count_ref[0]]
 		elif file_count_ref[0] > 0:
 			items_text = "%d file(s)" % file_count_ref[0]
 		else:
 			items_text = "%d folder(s)" % folder_count_ref[0]
 
 		warning_label.text = (
-			"About to delete %s (%s total). This cannot be undone!"
+			"\u26a0  %s selected (%s) \u2014 deletion cannot be undone!"
 			% [items_text, format_file_size(total_size_ref[0])]
 		)
 		warning_label.add_theme_color_override(
@@ -476,7 +507,7 @@ func _update_filter_button_label() -> void:
 	if filter_menu_button == null:
 		return
 	if active_type_filters.is_empty():
-		filter_menu_button.text = "All"
+		filter_menu_button.text = "All Types"
 	elif active_type_filters.size() == 1:
 		var popup := filter_menu_button.get_popup()
 		var idx := popup.get_item_index(active_type_filters[0])
