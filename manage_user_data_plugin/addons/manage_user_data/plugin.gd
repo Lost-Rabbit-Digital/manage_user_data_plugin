@@ -77,8 +77,8 @@ func show_confirmation_dialog() -> void:
 	filter_option.set_item_icon(0, base.get_theme_icon("FileTree", "EditorIcons"))
 	filter_option.set_item_icon(1, base.get_theme_icon("File", "EditorIcons"))
 	filter_option.set_item_icon(2, base.get_theme_icon("Folder", "EditorIcons"))
-	filter_option.set_item_icon(3, base.get_theme_icon("FileList", "EditorIcons"))
-	filter_option.set_item_icon(4, base.get_theme_icon("FileDead", "EditorIcons"))
+	filter_option.set_item_icon(3, base.get_theme_icon("File", "EditorIcons"))
+	filter_option.set_item_icon(4, base.get_theme_icon("File", "EditorIcons"))
 	filter_option.item_selected.connect(_on_filter_changed)
 	search_hbox.add_child(filter_option)
 
@@ -495,7 +495,7 @@ func get_file_icon(file_name: String) -> Texture2D:
 	var ext := file_name.get_extension().to_lower()
 	match ext:
 		"json":
-			return base.get_theme_icon("FileList", "EditorIcons")
+			return base.get_theme_icon("File", "EditorIcons")
 		"cfg", "ini", "toml":
 			return base.get_theme_icon("FileTree", "EditorIcons")
 		"png", "jpg", "jpeg", "webp", "bmp", "svg":
@@ -509,7 +509,7 @@ func get_file_icon(file_name: String) -> Texture2D:
 		"gd":
 			return base.get_theme_icon("Script", "EditorIcons")
 		"cache":
-			return base.get_theme_icon("FileDead", "EditorIcons")
+			return base.get_theme_icon("File", "EditorIcons")
 		"save", "dat":
 			return base.get_theme_icon("Save", "EditorIcons")
 		_:
