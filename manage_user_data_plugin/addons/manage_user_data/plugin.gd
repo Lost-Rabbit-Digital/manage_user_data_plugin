@@ -673,6 +673,8 @@ func _on_help_pressed() -> void:
 	help_dialog.exclusive = false
 
 	var vbox := VBoxContainer.new()
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_theme_constant_override("separation", 8)
 
 	var title_label := Label.new()
