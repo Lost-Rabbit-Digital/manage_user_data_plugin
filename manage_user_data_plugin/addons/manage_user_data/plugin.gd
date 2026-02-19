@@ -152,6 +152,7 @@ func show_confirmation_dialog() -> void:
 	root.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
 	root.set_checked(0, true)
 	root.set_editable(0, true)
+	root.set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER)
 	root.set_tooltip_text(0, "Tip: Uncheck items to keep them")
 	root.set_text(1, "user://")
 	root.set_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
@@ -202,6 +203,7 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 		item.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
 		item.set_checked(0, true)
 		item.set_editable(0, true)
+		item.set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER)
 		item.set_tooltip_text(0, "Tip: Uncheck items to keep them")
 		item.set_text(1, file_name)
 
@@ -296,6 +298,7 @@ func _on_refresh_tree() -> void:
 	root.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
 	root.set_checked(0, true)
 	root.set_editable(0, true)
+	root.set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER)
 	root.set_tooltip_text(0, "Tip: Uncheck items to keep them")
 	root.set_text(1, "user://")
 	root.set_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
