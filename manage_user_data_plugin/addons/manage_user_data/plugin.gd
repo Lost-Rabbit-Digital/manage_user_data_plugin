@@ -96,6 +96,7 @@ func show_confirmation_dialog() -> void:
 	popup.set_item_icon(3, base.get_theme_icon("File", "EditorIcons"))
 	popup.id_pressed.connect(_on_filter_type_toggled)
 	search_hbox.add_child(filter_menu_button)
+	_apply_outline_to_button(filter_menu_button, base)
 
 	clear_filter_btn = Button.new()
 	clear_filter_btn.text = "Clear"
@@ -115,6 +116,7 @@ func show_confirmation_dialog() -> void:
 	select_all_checkbox.button_pressed = true
 	select_all_checkbox.toggled.connect(_on_select_all_checkbox_toggled)
 	hbox.add_child(select_all_checkbox)
+	_apply_outline_to_button(select_all_checkbox, base)
 
 	var open_dir_btn := Button.new()
 	open_dir_btn.text = "Open User Dir"
@@ -781,6 +783,28 @@ func collect_checked_items(item: TreeItem, result: Array) -> void:
 	while child != null:
 		collect_checked_items(child, result)
 		child = child.get_next()
+
+
+## Applies a visible border/outline to [param btn] using the editor accent color.
+## Duplicates the existing button StyleBoxFlat if available; otherwise creates one.
+func _apply_outline_to_button(btn: Button, base: Control) -> void:
+	var existing_style := base.get_theme_stylebox("normal", "Button")
+	var style: StyleBoxFlat
+	if existing_style is StyleBoxFlat:
+		style = (existing_style as StyleBoxFlat).duplicate()
+		style.set_border_width_all(1)
+		style.border_color = base.get_theme_color("accent_color", "Editor")
+	else:
+		style = StyleBoxFlat.new()
+		style.bg_color = Color(0.18, 0.18, 0.18, 1.0)
+		style.set_border_width_all(1)
+		style.border_color = base.get_theme_color("accent_color", "Editor")
+		style.set_corner_radius_all(3)
+		style.content_margin_left = 6
+		style.content_margin_right = 6
+		style.content_margin_top = 4
+		style.content_margin_bottom = 4
+	btn.add_theme_stylebox_override("normal", style)
 
 
 ## Recursively deletes all contents inside [param path] without removing the
