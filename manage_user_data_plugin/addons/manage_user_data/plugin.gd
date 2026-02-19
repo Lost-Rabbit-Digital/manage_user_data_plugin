@@ -696,70 +696,236 @@ func _on_help_pressed() -> void:
 	if help_dialog:
 		help_dialog.grab_focus()
 		return
-	help_dialog = AcceptDialog.new()
-	help_dialog.title = "About Manage User Data"
-	help_dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS
-	help_dialog.min_size = Vector2i(640, 480)
-	help_dialog.size = Vector2i(640, 480)
-	help_dialog.exclusive = false
-
-	var vbox := VBoxContainer.new()
-	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_theme_constant_override("separation", 8)
-
-	var title_label := Label.new()
-	title_label.text = "Manage User Data  v2.4.0"
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var title_font_size := title_label.get_theme_font_size("font_size")
-	title_label.add_theme_font_size_override("font_size", title_font_size + 4)
-	vbox.add_child(title_label)
-
-	var sep := HSeparator.new()
-	vbox.add_child(sep)
-
-	var desc_label := Label.new()
-	desc_label.text = (
-		"A Godot editor plugin for browsing and selectively deleting the\n"
-		+ "contents of your project's user:// directory.\n\n"
-		+ "Features:\n"
-		+ "  \u2022 Visual file/folder tree with per-item checkboxes\n"
-		+ "  \u2022 Search and type filters (.json, .cache, files, folders)\n"
-		+ "  \u2022 Displays file sizes and deletion summary before confirming\n"
-		+ "  \u2022 Quick access to open the user:// folder in your OS file manager"
-	)
-	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_child(desc_label)
-
-	var sep2 := HSeparator.new()
-	vbox.add_child(sep2)
 
 	var base := EditorInterface.get_base_control()
 
+	var cfg := ConfigFile.new()
+	var plugin_version := "2.4.3"
+	if cfg.load("res://addons/manage_user_data/plugin.cfg") == OK:
+		plugin_version = cfg.get_value("plugin", "version", plugin_version)
+
+	help_dialog = AcceptDialog.new()
+	help_dialog.title = "Help — Manage User Data"
+	help_dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS
+	help_dialog.size = Vector2i(780, 580)
+	help_dialog.min_size = Vector2i(540, 420)
+	help_dialog.wrap_controls = true
+	help_dialog.exclusive = false
+
+	var outer_vbox := VBoxContainer.new()
+	outer_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	outer_vbox.add_theme_constant_override("separation", 0)
+
+	# === HEADER ===
+	var header_hbox := HBoxContainer.new()
+	header_hbox.add_theme_constant_override("separation", 10)
+
+	var plugin_icon := TextureRect.new()
+	plugin_icon.texture = base.get_theme_icon("Filesystem", "EditorIcons")
+	plugin_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	plugin_icon.custom_minimum_size = Vector2(36, 36)
+	header_hbox.add_child(plugin_icon)
+
+	var header_vbox := VBoxContainer.new()
+	header_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_vbox.add_theme_constant_override("separation", 2)
+
+	var title_label := Label.new()
+	title_label.text = "Manage User Data"
+	title_label.add_theme_font_size_override("font_size", title_label.get_theme_font_size("font_size") + 6)
+	header_vbox.add_child(title_label)
+
+	var subtitle_label := Label.new()
+	subtitle_label.text = "v%s  ·  by Lost Rabbit Digital" % plugin_version
+	subtitle_label.add_theme_color_override("font_color", base.get_theme_color("font_disabled_color", "Editor"))
+	header_vbox.add_child(subtitle_label)
+
+	header_hbox.add_child(header_vbox)
+
+	var header_margin := MarginContainer.new()
+	header_margin.add_theme_constant_override("margin_left", 10)
+	header_margin.add_theme_constant_override("margin_right", 10)
+	header_margin.add_theme_constant_override("margin_top", 10)
+	header_margin.add_theme_constant_override("margin_bottom", 10)
+	header_margin.add_child(header_hbox)
+	outer_vbox.add_child(header_margin)
+	outer_vbox.add_child(HSeparator.new())
+
+	# === SCROLLABLE CONTENT ===
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+
+	var content_vbox := VBoxContainer.new()
+	content_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content_vbox.add_theme_constant_override("separation", 10)
+
+	var content_margin := MarginContainer.new()
+	content_margin.add_theme_constant_override("margin_left", 12)
+	content_margin.add_theme_constant_override("margin_right", 12)
+	content_margin.add_theme_constant_override("margin_top", 10)
+	content_margin.add_theme_constant_override("margin_bottom", 10)
+	content_margin.add_child(content_vbox)
+	scroll.add_child(content_margin)
+
+	# --- Shared helpers ---
+	var _add_heading := func(text: String) -> void:
+		var lbl := Label.new()
+		lbl.text = text
+		lbl.add_theme_font_size_override("font_size", lbl.get_theme_font_size("font_size") + 1)
+		lbl.add_theme_color_override("font_color", base.get_theme_color("accent_color", "Editor"))
+		content_vbox.add_child(lbl)
+		content_vbox.add_child(HSeparator.new())
+
+	var _add_body := func(text: String) -> void:
+		var lbl := Label.new()
+		lbl.text = text
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		content_vbox.add_child(lbl)
+
+	# --- Overview ---
+	_add_heading.call("Overview")
+	_add_body.call(
+		"Manage User Data lets you browse and selectively delete files from your project's " +
+		"user:// directory directly inside the Godot editor — no external file manager required."
+	)
+
+	# --- How to Use ---
+	_add_heading.call("How to Use")
+
+	var steps: Array = [
+		["1.  Open the plugin", "Click \"User Data\" in the editor toolbar to open the main window."],
+		["2.  Browse files", "The tree lists every file and folder inside user://. Expand folders to explore nested contents."],
+		["3.  Select items", "Tick the checkbox next to each file or folder to mark it for deletion. Use \"Select All\" to toggle everything at once."],
+		["4.  Search & filter", "Type in the search bar to find items by name. Use the \"All Types\" dropdown to show only files, folders, .json, or .cache entries."],
+		["5.  Review", "The status bar shows a live count and total size of your selection before you commit."],
+		["6.  Delete", "Click \"Delete Selected\" and confirm. Deletion is permanent and cannot be undone."],
+	]
+
+	var steps_grid := VBoxContainer.new()
+	steps_grid.add_theme_constant_override("separation", 6)
+	for step: Array in steps:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		var step_name := Label.new()
+		step_name.text = step[0]
+		step_name.custom_minimum_size = Vector2(150, 0)
+		step_name.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		row.add_child(step_name)
+
+		var step_desc := Label.new()
+		step_desc.text = step[1]
+		step_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		step_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(step_desc)
+
+		steps_grid.add_child(row)
+	content_vbox.add_child(steps_grid)
+
+	# --- Features ---
+	_add_heading.call("Features")
+
+	var features: Array = [
+		["File Tree", "Full visual tree of user:// with per-item checkboxes for fine-grained selection."],
+		["Real-time Search", "Instantly filters the tree as you type — matching parent folders expand automatically."],
+		["Type Filters", "Narrow the view to Files Only, Folders Only, .json, or .cache entries via the dropdown."],
+		["Bulk Selection", "\"Select All\" selects or deselects every visible item in one click."],
+		["File Sizes", "Inline file sizes on every entry; the status bar totals the size of your current selection."],
+		["Open in OS", "\"Open Folder\" launches user:// in your operating system's native file manager."],
+		["Refresh", "Rescans user:// at any time without reopening the plugin window."],
+	]
+
+	var features_grid := VBoxContainer.new()
+	features_grid.add_theme_constant_override("separation", 6)
+	for feat: Array in features:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		var bullet := TextureRect.new()
+		bullet.texture = base.get_theme_icon("ArrowRight", "EditorIcons")
+		bullet.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		bullet.custom_minimum_size = Vector2(16, 16)
+		row.add_child(bullet)
+
+		var feat_name := Label.new()
+		feat_name.text = feat[0]
+		feat_name.custom_minimum_size = Vector2(130, 0)
+		feat_name.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		row.add_child(feat_name)
+
+		var feat_desc := Label.new()
+		feat_desc.text = feat[1]
+		feat_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		feat_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(feat_desc)
+
+		features_grid.add_child(row)
+	content_vbox.add_child(features_grid)
+
+	# --- Tips ---
+	_add_heading.call("Tips & Notes")
+	_add_body.call(
+		"\u2022  Deletion is permanent — double-check your selection before confirming.\n" +
+		"\u2022  Checking a folder selects all of its contents recursively.\n" +
+		"\u2022  The user:// path on disk:\n" +
+		"       Windows:  %%APPDATA%%\\Godot\\app_userdata\\<project>\n" +
+		"       macOS:    ~/Library/Application Support/Godot/app_userdata/<project>\n" +
+		"       Linux:    ~/.local/share/godot/app_userdata/<project>"
+	)
+
+	outer_vbox.add_child(scroll)
+	outer_vbox.add_child(HSeparator.new())
+
+	# === LINKS FOOTER ===
+	var links_hbox := HBoxContainer.new()
+	links_hbox.add_theme_constant_override("separation", 8)
+
 	var credit_btn := Button.new()
-	credit_btn.text = "Created by Lost Rabbit Digital"
+	credit_btn.text = "Lost Rabbit Digital"
 	credit_btn.icon = base.get_theme_icon("ExternalLink", "EditorIcons")
 	credit_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	credit_btn.flat = true
 	credit_btn.tooltip_text = "https://lostrabbit.digital/"
 	credit_btn.pressed.connect(func() -> void:
 		OS.shell_open("https://lostrabbit.digital/")
 	)
-	vbox.add_child(credit_btn)
+	links_hbox.add_child(credit_btn)
+
+	links_hbox.add_child(VSeparator.new())
 
 	var discord_btn := Button.new()
-	discord_btn.text = "Join us on Discord"
+	discord_btn.text = "Discord Community"
 	discord_btn.icon = base.get_theme_icon("ExternalLink", "EditorIcons")
 	discord_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	discord_btn.flat = true
 	discord_btn.tooltip_text = "https://discord.gg/Y7caBf7gBj"
 	discord_btn.pressed.connect(func() -> void:
 		OS.shell_open("https://discord.gg/Y7caBf7gBj")
 	)
-	vbox.add_child(discord_btn)
+	links_hbox.add_child(discord_btn)
 
-	help_dialog.add_child(vbox)
+	var links_spacer := Control.new()
+	links_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	links_hbox.add_child(links_spacer)
+
+	var links_margin := MarginContainer.new()
+	links_margin.add_theme_constant_override("margin_left", 8)
+	links_margin.add_theme_constant_override("margin_right", 8)
+	links_margin.add_theme_constant_override("margin_top", 4)
+	links_margin.add_theme_constant_override("margin_bottom", 4)
+	links_margin.add_child(links_hbox)
+	outer_vbox.add_child(links_margin)
+
+	help_dialog.add_child(outer_vbox)
 	EditorInterface.get_base_control().add_child(help_dialog)
 	help_dialog.popup_centered()
+
 	var _close_help := func() -> void:
 		if help_dialog:
 			help_dialog.queue_free()
