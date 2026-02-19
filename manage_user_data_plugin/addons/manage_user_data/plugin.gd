@@ -132,6 +132,13 @@ func show_confirmation_dialog() -> void:
 	refresh_btn.pressed.connect(_on_refresh_tree)
 	hbox.add_child(refresh_btn)
 
+	var help_btn := Button.new()
+	help_btn.text = "?"
+	help_btn.tooltip_text = "Help"
+	help_btn.flat = true
+	help_btn.pressed.connect(_on_help_pressed)
+	hbox.add_child(help_btn)
+
 	vbox.add_child(hbox)
 
 	# Directory tree
@@ -578,6 +585,70 @@ func format_file_size(bytes: int) -> String:
 		return "%.2f KB" % (bytes / 1024.0)
 	else:
 		return "%.2f MB" % (bytes / (1024.0 * 1024.0))
+
+
+## Shows the help dialog with plugin info and credits.
+func _on_help_pressed() -> void:
+	var help_dialog := AcceptDialog.new()
+	help_dialog.title = "About Manage User Data"
+	help_dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS
+	help_dialog.min_size = Vector2i(420, 260)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+
+	var title_label := Label.new()
+	title_label.text = "Manage User Data  v2.4.0"
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var title_font_size := title_label.get_theme_font_size("font_size")
+	title_label.add_theme_font_size_override("font_size", title_font_size + 4)
+	vbox.add_child(title_label)
+
+	var sep := HSeparator.new()
+	vbox.add_child(sep)
+
+	var desc_label := Label.new()
+	desc_label.text = (
+		"A Godot editor plugin for browsing and selectively deleting the\n"
+		+ "contents of your project's user:// directory.\n\n"
+		+ "Features:\n"
+		+ "  \u2022 Visual file/folder tree with per-item checkboxes\n"
+		+ "  \u2022 Search and type filters (.json, .cache, files, folders)\n"
+		+ "  \u2022 Displays file sizes and deletion summary before confirming\n"
+		+ "  \u2022 Quick access to open the user:// folder in your OS file manager"
+	)
+	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_child(desc_label)
+
+	var sep2 := HSeparator.new()
+	vbox.add_child(sep2)
+
+	var credit_label := Label.new()
+	credit_label.text = "Created by Lost Rabbit Digital"
+	credit_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var base := EditorInterface.get_base_control()
+	credit_label.add_theme_color_override(
+		"font_color", base.get_theme_color("font_disabled_color", "Editor")
+	)
+	vbox.add_child(credit_label)
+
+	var discord_btn := Button.new()
+	discord_btn.text = "Join us on Discord"
+	discord_btn.icon = base.get_theme_icon("ExternalLink", "EditorIcons")
+	discord_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	discord_btn.tooltip_text = "https://discord.gg/Y7caBf7gBj"
+	discord_btn.pressed.connect(func() -> void:
+		OS.shell_open("https://discord.gg/Y7caBf7gBj")
+	)
+	vbox.add_child(discord_btn)
+
+	help_dialog.add_child(vbox)
+	EditorInterface.get_base_control().add_child(help_dialog)
+	help_dialog.popup_centered()
+	help_dialog.confirmed.connect(help_dialog.queue_free)
+	help_dialog.canceled.connect(help_dialog.queue_free)
+	help_dialog.close_requested.connect(help_dialog.queue_free)
 
 
 func _on_confirmed_delete() -> void:
