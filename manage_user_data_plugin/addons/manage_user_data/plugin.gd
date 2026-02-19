@@ -771,7 +771,7 @@ func _on_help_pressed() -> void:
 
 func _on_confirmed_delete() -> void:
 	delete_selected_items()
-	_on_dialog_closed()
+	_on_refresh_tree()
 
 
 func _on_dialog_closed() -> void:
