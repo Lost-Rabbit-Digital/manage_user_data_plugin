@@ -175,6 +175,9 @@ func show_confirmation_dialog() -> void:
 	root.set_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
 	root.set_icon_modulate(1, Color.hex(0xE0A55CFF))
 	root.set_text(2, "Directory")
+	var root_tooltip := "user://\nType: Directory\nPath: %s" % ProjectSettings.globalize_path("user://")
+	root.set_tooltip_text(1, root_tooltip)
+	root.set_tooltip_text(2, root_tooltip)
 
 	populate_tree(root, "user://")
 
@@ -228,15 +231,25 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 			item.set_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
 			item.set_icon_modulate(1, Color.hex(0xE0A55CFF))
 			item.set_collapsed(false)
+			var folder_tooltip := "%s\nType: Folder\nPath: %s" % [file_name, full_path]
+			item.set_tooltip_text(1, folder_tooltip)
+			item.set_tooltip_text(2, folder_tooltip)
 			populate_tree(item, full_path)
 		else:
 			item.set_icon(1, get_file_icon(file_name))
 			var file := FileAccess.open(full_path, FileAccess.READ)
 			if file:
-				item.set_text(2, "File (%s)" % format_file_size(file.get_length()))
+				var file_size := file.get_length()
 				file.close()
+				item.set_text(2, "File (%s)" % format_file_size(file_size))
+				var file_tooltip := "%s\nType: %s\nSize: %s\nPath: %s" % [file_name, get_file_type_label(file_name), format_file_size(file_size), full_path]
+				item.set_tooltip_text(1, file_tooltip)
+				item.set_tooltip_text(2, file_tooltip)
 			else:
 				item.set_text(2, "File")
+				var file_tooltip := "%s\nType: %s\nPath: %s" % [file_name, get_file_type_label(file_name), full_path]
+				item.set_tooltip_text(1, file_tooltip)
+				item.set_tooltip_text(2, file_tooltip)
 
 		file_name = dir.get_next()
 
@@ -322,6 +335,9 @@ func _on_refresh_tree() -> void:
 	root.set_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
 	root.set_icon_modulate(1, Color.hex(0xE0A55CFF))
 	root.set_text(2, "Directory")
+	var root_tooltip := "user://\nType: Directory\nPath: %s" % ProjectSettings.globalize_path("user://")
+	root.set_tooltip_text(1, root_tooltip)
+	root.set_tooltip_text(2, root_tooltip)
 
 	populate_tree(root, "user://")
 	update_warning_label()
@@ -579,6 +595,50 @@ func get_file_icon(file_name: String) -> Texture2D:
 			return base.get_theme_icon("Save", "EditorIcons")
 		_:
 			return base.get_theme_icon("File", "EditorIcons")
+
+
+## Returns a human-readable type label for a file based on its extension.
+func get_file_type_label(file_name: String) -> String:
+	var ext := file_name.get_extension().to_lower()
+	match ext:
+		"json":
+			return "JSON Data"
+		"cfg":
+			return "Config File"
+		"ini":
+			return "INI Config"
+		"toml":
+			return "TOML Config"
+		"png":
+			return "PNG Image"
+		"jpg", "jpeg":
+			return "JPEG Image"
+		"webp":
+			return "WebP Image"
+		"bmp":
+			return "BMP Image"
+		"svg":
+			return "SVG Image"
+		"wav":
+			return "WAV Audio"
+		"ogg":
+			return "OGG Audio"
+		"mp3":
+			return "MP3 Audio"
+		"tscn":
+			return "Packed Scene"
+		"tres":
+			return "Resource"
+		"gd":
+			return "GDScript"
+		"cache":
+			return "Cache File"
+		"save":
+			return "Save File"
+		"dat":
+			return "Data File"
+		_:
+			return ext.to_upper() + " File" if not ext.is_empty() else "File"
 
 
 ## Returns a human-readable string for the given byte count.
