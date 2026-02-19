@@ -227,7 +227,7 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 			item.set_text(2, "Folder")
 			item.set_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
 			item.set_icon_modulate(1, Color.hex(0xE0A55CFF))
-			item.set_collapsed(true)
+			item.set_collapsed(false)
 			populate_tree(item, full_path)
 		else:
 			item.set_icon(1, get_file_icon(file_name))
