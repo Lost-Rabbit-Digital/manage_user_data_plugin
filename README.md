@@ -1,144 +1,67 @@
-# Clear User Data
+# Manage User Data
 
-A Godot 4 editor plugin for browsing and selectively deleting the contents of your project's `user://` directory — the same directory where save files, logs, caches, and other persistent data land at runtime.
+A Godot 4 editor plugin for browsing and selectively deleting your project's `user://` directory — without leaving the editor.
 
----
-
-## Requirements
-
-- Godot **4.3** or later
+**Requires Godot 4.3+**
 
 ---
 
-## Installation
+## Install
 
-### From the Asset Library
+### Asset Library (recommended)
 
-1. Open your project in the Godot editor.
-2. Go to **AssetLib** (top centre of the editor).
-3. Search for **"Clear User Data"**.
-4. Click **Download**, then **Install**.
-5. Enable the plugin under **Project → Project Settings → Plugins**.
+1. Open your project → **AssetLib** → search **"Manage User Data"**
+2. **Download** → **Install**
+3. **Project → Project Settings → Plugins** → enable **Manage User Data**
 
 ### Manual
 
-1. Copy the `addons/clear_user_data/` folder into your project's `addons/` directory so the layout looks like:
-
+1. Copy `addons/manage_user_data/` into your project:
    ```
    your_project/
    └── addons/
-       └── clear_user_data/
+       └── manage_user_data/
            ├── plugin.cfg
            └── plugin.gd
    ```
-
-2. Open **Project → Project Settings → Plugins** and set **Clear User Data** to **Enabled**.
+2. **Project → Project Settings → Plugins** → enable **Manage User Data**
 
 ---
 
 ## Usage
 
-Once enabled, a **"User Data"** button appears in the main editor toolbar (top-right area, alongside other editor tools).
+A **User Data** button appears in the editor toolbar. Click it to open the dialog.
 
-### Opening the dialog
-
-Click the **User Data** toolbar button. The **Manage User Directory Contents** dialog opens and immediately scans your `user://` directory.
-
-### Reading the tree
-
-The tree mirrors the structure of `user://`:
-
-| Column | Contents |
+| Action | How |
 |---|---|
-| Checkbox | Tick = will be deleted; untick = will be kept |
-| Name | File or folder name (with editor icon) |
-| Type / Size | `Folder`, or `File (12.50 KB)` |
+| Delete everything | Leave all items checked → **Delete Selected** |
+| Delete specific files | **Select All** checkbox to deselect all → tick what you want → **Delete Selected** |
+| Find a file | Type in the **Search** bar or use the **All Types** filter dropdown |
+| Reset filters | Click the **×** button next to the filter dropdown |
+| Refresh the list | Click the **⟳** (reload) icon |
+| Open in file manager | Click **Open Folder** |
 
-All items are **checked by default**. Untick anything you want to keep before confirming.
-
-Clicking a folder's checkbox propagates the state to all its children automatically.
-
-### Filtering
-
-Use the **Search** field and **Type** drop-down to narrow the list:
-
-| Type filter | Shows |
-|---|---|
-| All | Everything |
-| Files Only | Files only (folders act as containers) |
-| Folders Only | Folders only |
-| .json | `.json` files only |
-| .cache | `.cache` files only |
-
-Press **Clear** to reset both filters at once. Folders that contain matching items are expanded automatically.
-
-### Bulk selection
-
-- **Select All** — checks every item.
-- **Deselect All** — unchecks every item (useful when you only want to delete one or two things).
-
-### Refreshing
-
-Click **Refresh** to re-scan `user://` without closing the dialog. Useful if an external process wrote files while the dialog was open.
-
-### Opening the directory
-
-**Open User Dir** launches your OS file manager at the `user://` location (the actual path on disk, e.g. `~/.local/share/godot/app_userdata/<project>/`).
-
-### Deleting
-
-The status bar at the bottom of the dialog shows a live summary:
-
-- **No items selected** — nothing will happen.
-- **About to delete N files (X MB total). This cannot be undone!** — shown in red when at least one item is checked.
-
-Click **Delete Selected** to perform the deletion. The operation cannot be undone. The dialog closes automatically on completion.
-
-> **Tip:** To delete everything, leave all items checked and click Delete Selected. To clean only specific files, click **Deselect All** first, then tick the items you want to remove.
+> Deletion is permanent and cannot be undone. The status bar shows a live count and total size of what will be deleted before you confirm.
 
 ---
 
-## What lives in user://
+## What's in user://
 
-Godot writes to `user://` whenever your game uses paths like:
+Godot writes to `user://` when your game uses paths like `"user://save.json"`. Common files to clean during development:
 
-```gdscript
-FileAccess.open("user://save.json", FileAccess.WRITE)
-```
-
-Common contents you may want to clean up during development:
-
-| Path | Typical source |
+| Extension | Source |
 |---|---|
-| `user://*.cfg` | `ConfigFile` saves |
-| `user://*.json` | Custom JSON save data |
-| `user://*.log` | `print()` output redirected to file |
-| `user://*.cache` | Engine or game caches |
-| `user://screenshots/` | `DisplayServer.screenshot()` |
+| `.cfg` / `.json` | Save data |
+| `.log` | Log files |
+| `.cache` | Engine/game caches |
 
-The exact on-disk location for each platform:
+**On-disk location:**
 
 | Platform | Path |
 |---|---|
 | Windows | `%APPDATA%\Godot\app_userdata\<project>\` |
 | macOS | `~/Library/Application Support/Godot/app_userdata/<project>/` |
 | Linux | `~/.local/share/godot/app_userdata/<project>/` |
-
----
-
-## Common workflows
-
-**Reset game state between test runs**
-
-Open the dialog, leave everything checked, click **Delete Selected**. Hit Play — your game starts with a clean slate.
-
-**Keep settings, wipe saves**
-
-Open the dialog, click **Deselect All**, then tick only the save-related files or folders. Click **Delete Selected**.
-
-**Check how much data the game has written**
-
-Open the dialog and read the status bar — it totals the size of all checked items. No need to navigate to the folder yourself.
 
 ---
 
