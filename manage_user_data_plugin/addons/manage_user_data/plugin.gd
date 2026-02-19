@@ -592,10 +592,11 @@ func _on_help_pressed() -> void:
 	var help_dialog := AcceptDialog.new()
 	help_dialog.title = "About Manage User Data"
 	help_dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS
-	help_dialog.min_size = Vector2i(420, 260)
+	help_dialog.min_size = Vector2i(360, 200)
+	help_dialog.max_size = Vector2i(360, 200)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 12)
+	vbox.add_theme_constant_override("separation", 8)
 
 	var title_label := Label.new()
 	title_label.text = "Manage User Data  v2.4.0"
@@ -624,14 +625,17 @@ func _on_help_pressed() -> void:
 	var sep2 := HSeparator.new()
 	vbox.add_child(sep2)
 
-	var credit_label := Label.new()
-	credit_label.text = "Created by Lost Rabbit Digital"
-	credit_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var base := EditorInterface.get_base_control()
-	credit_label.add_theme_color_override(
-		"font_color", base.get_theme_color("font_disabled_color", "Editor")
+
+	var credit_btn := Button.new()
+	credit_btn.text = "Created by Lost Rabbit Digital"
+	credit_btn.icon = base.get_theme_icon("ExternalLink", "EditorIcons")
+	credit_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	credit_btn.tooltip_text = "https://lostrabbit.digital/"
+	credit_btn.pressed.connect(func() -> void:
+		OS.shell_open("https://lostrabbit.digital/")
 	)
-	vbox.add_child(credit_label)
+	vbox.add_child(credit_btn)
 
 	var discord_btn := Button.new()
 	discord_btn.text = "Join us on Discord"
