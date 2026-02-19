@@ -5,9 +5,11 @@ var button: Button
 var confirmation_dialog: ConfirmationDialog
 var tree: Tree
 var search_text: LineEdit
-var filter_option: OptionButton
+var filter_menu_button: MenuButton
+var clear_filter_btn: Button
 var warning_label: Label
 var select_all_checkbox: CheckBox
+var active_type_filters: Array[int] = []
 
 
 func _enter_tree() -> void:
@@ -34,6 +36,7 @@ func _on_button_pressed() -> void:
 
 ## Opens the main user data management dialog.
 func show_confirmation_dialog() -> void:
+	active_type_filters.clear()
 	var base := EditorInterface.get_base_control()
 
 	confirmation_dialog = ConfirmationDialog.new()
@@ -61,6 +64,7 @@ func show_confirmation_dialog() -> void:
 	search_text.placeholder_text = "Filter by name..."
 	search_text.custom_minimum_size = Vector2(200, 0)
 	search_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	search_text.clear_button_enabled = true
 	search_text.text_changed.connect(_on_search_changed)
 	search_hbox.add_child(search_text)
 
@@ -68,24 +72,27 @@ func show_confirmation_dialog() -> void:
 	filter_label.text = "Type:"
 	search_hbox.add_child(filter_label)
 
-	filter_option = OptionButton.new()
-	filter_option.add_item("All", 0)
-	filter_option.add_item("Files Only", 1)
-	filter_option.add_item("Folders Only", 2)
-	filter_option.add_item(".json", 3)
-	filter_option.add_item(".cache", 4)
-	filter_option.set_item_icon(0, base.get_theme_icon("FileTree", "EditorIcons"))
-	filter_option.set_item_icon(1, base.get_theme_icon("File", "EditorIcons"))
-	filter_option.set_item_icon(2, base.get_theme_icon("Folder", "EditorIcons"))
-	filter_option.set_item_icon(3, base.get_theme_icon("File", "EditorIcons"))
-	filter_option.set_item_icon(4, base.get_theme_icon("File", "EditorIcons"))
-	filter_option.item_selected.connect(_on_filter_changed)
-	search_hbox.add_child(filter_option)
+	filter_menu_button = MenuButton.new()
+	filter_menu_button.text = "All"
+	filter_menu_button.flat = false
+	var popup := filter_menu_button.get_popup()
+	popup.hide_on_checkable_item_selection = false
+	popup.add_check_item("Files Only", 1)
+	popup.add_check_item("Folders Only", 2)
+	popup.add_check_item(".json", 3)
+	popup.add_check_item(".cache", 4)
+	popup.set_item_icon(0, base.get_theme_icon("File", "EditorIcons"))
+	popup.set_item_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
+	popup.set_item_icon(2, base.get_theme_icon("File", "EditorIcons"))
+	popup.set_item_icon(3, base.get_theme_icon("File", "EditorIcons"))
+	popup.id_pressed.connect(_on_filter_type_toggled)
+	search_hbox.add_child(filter_menu_button)
 
-	var clear_filter_btn := Button.new()
+	clear_filter_btn = Button.new()
 	clear_filter_btn.text = "Clear"
 	clear_filter_btn.icon = base.get_theme_icon("Clear", "EditorIcons")
 	clear_filter_btn.pressed.connect(_on_clear_filters)
+	clear_filter_btn.visible = false
 	search_hbox.add_child(clear_filter_btn)
 
 	vbox.add_child(search_hbox)
@@ -403,31 +410,71 @@ func calculate_folder_size(path: String) -> int:
 
 
 func _on_search_changed(_new_text: String) -> void:
+	_update_clear_button_visibility()
 	apply_filters()
 
 
-func _on_filter_changed(_index: int) -> void:
+func _on_filter_type_toggled(id: int) -> void:
+	var popup := filter_menu_button.get_popup()
+	var idx := popup.get_item_index(id)
+	var currently_checked := popup.is_item_checked(idx)
+	popup.set_item_checked(idx, not currently_checked)
+
+	if not currently_checked:
+		if not active_type_filters.has(id):
+			active_type_filters.append(id)
+	else:
+		active_type_filters.erase(id)
+
+	_update_filter_button_label()
+	_update_clear_button_visibility()
 	apply_filters()
+
+
+func _update_filter_button_label() -> void:
+	if filter_menu_button == null:
+		return
+	if active_type_filters.is_empty():
+		filter_menu_button.text = "All"
+	elif active_type_filters.size() == 1:
+		var popup := filter_menu_button.get_popup()
+		var idx := popup.get_item_index(active_type_filters[0])
+		filter_menu_button.text = popup.get_item_text(idx)
+	else:
+		filter_menu_button.text = "%d Types" % active_type_filters.size()
+
+
+## Shows the Clear button only when a type filter other than "All" is active
+## (i.e. at least one specific type is selected), satisfying the requirement
+## of "more than 1 filter or a filter beside All".
+func _update_clear_button_visibility() -> void:
+	if clear_filter_btn == null:
+		return
+	clear_filter_btn.visible = not active_type_filters.is_empty()
 
 
 func _on_clear_filters() -> void:
 	search_text.text = ""
-	filter_option.select(0)
+	active_type_filters.clear()
+	var popup := filter_menu_button.get_popup()
+	for i in popup.item_count:
+		popup.set_item_checked(i, false)
+	_update_filter_button_label()
+	_update_clear_button_visibility()
 	apply_filters()
 
 
-## Applies the active search text and type filter to the entire tree.
+## Applies the active search text and type filters to the entire tree.
 func apply_filters() -> void:
 	var search_term := search_text.text.to_lower()
-	var filter_type := filter_option.get_selected_id()
-	filter_tree_item(tree.get_root(), search_term, filter_type)
-	if filter_type != 0 or not search_term.is_empty():
+	filter_tree_item(tree.get_root(), search_term, active_type_filters)
+	if not active_type_filters.is_empty() or not search_term.is_empty():
 		expand_matching_parents(tree.get_root())
 
 
 ## Recursively filters tree items. Returns [code]true[/code] if the item or
 ## any descendant matches the active filters.
-func filter_tree_item(item: TreeItem, search_term: String, filter_type: int) -> bool:
+func filter_tree_item(item: TreeItem, search_term: String, filter_types: Array[int]) -> bool:
 	if item == null:
 		return false
 
@@ -438,22 +485,29 @@ func filter_tree_item(item: TreeItem, search_term: String, filter_type: int) -> 
 	var matches_search: bool = search_term.is_empty() or item_name.contains(search_term)
 
 	var matches_type := false
-	match filter_type:
-		0: matches_type = true
-		1: matches_type = not is_folder
-		2: matches_type = is_folder
-		3: matches_type = not is_folder and item_name.ends_with(".json")
-		4: matches_type = not is_folder and item_name.ends_with(".cache")
+	if filter_types.is_empty():
+		matches_type = true
+	else:
+		for ft in filter_types:
+			match ft:
+				1: if not is_folder: matches_type = true
+				2: if is_folder: matches_type = true
+				3: if not is_folder and item_name.ends_with(".json"): matches_type = true
+				4: if not is_folder and item_name.ends_with(".cache"): matches_type = true
+			if matches_type:
+				break
 
 	var any_child_visible := false
 	var child := item.get_first_child()
 	while child != null:
-		if filter_tree_item(child, search_term, filter_type):
+		if filter_tree_item(child, search_term, filter_types):
 			any_child_visible = true
 		child = child.get_next()
 
+	# If only non-folder filters are active and this is a folder, use folder as a container
+	var has_folder_type_filter := filter_types.is_empty() or filter_types.has(2)
 	var should_be_visible: bool
-	if filter_type == 1 and is_folder:
+	if is_folder and not has_folder_type_filter:
 		should_be_visible = any_child_visible
 	else:
 		should_be_visible = (matches_search and matches_type) or any_child_visible
@@ -531,6 +585,9 @@ func _on_dialog_closed() -> void:
 		confirmation_dialog.queue_free()
 		confirmation_dialog = null
 		select_all_checkbox = null
+		filter_menu_button = null
+		clear_filter_btn = null
+		active_type_filters.clear()
 
 
 ## Deletes all checked items, deepest paths first to avoid parent-before-child issues.
