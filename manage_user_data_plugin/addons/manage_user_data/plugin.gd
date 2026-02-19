@@ -39,8 +39,13 @@ func show_confirmation_dialog() -> void:
 	active_type_filters.clear()
 	var base := EditorInterface.get_base_control()
 
+	var cfg := ConfigFile.new()
+	var plugin_version := ""
+	if cfg.load("res://addons/manage_user_data/plugin.cfg") == OK:
+		plugin_version = cfg.get_value("plugin", "version", "")
+
 	confirmation_dialog = ConfirmationDialog.new()
-	confirmation_dialog.title = "Manage User Directory Contents"
+	confirmation_dialog.title = "Manage User Directory Contents" + (" v" + plugin_version if plugin_version else "")
 	confirmation_dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS
 	confirmation_dialog.size = Vector2i(700, 550)
 	confirmation_dialog.min_size = Vector2i(500, 400)
