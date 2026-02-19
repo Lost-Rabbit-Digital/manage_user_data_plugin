@@ -159,7 +159,7 @@ func show_confirmation_dialog() -> void:
 	tree.set_column_expand(0, false)
 	tree.set_column_expand(1, true)
 	tree.set_column_expand(2, true)
-	tree.set_column_custom_minimum_width(0, 24)
+	tree.set_column_custom_minimum_width(0, 40)
 	tree.set_column_custom_minimum_width(1, 200)
 	tree.set_column_custom_minimum_width(2, 100)
 	tree.set_column_expand_ratio(0, 0)
