@@ -132,14 +132,14 @@ func show_confirmation_dialog() -> void:
 	var refresh_btn := Button.new()
 	refresh_btn.icon = base.get_theme_icon("Reload", "EditorIcons")
 	refresh_btn.tooltip_text = "Refresh"
-	refresh_btn.flat = true
+	refresh_btn.flat = false
 	refresh_btn.pressed.connect(_on_refresh_tree)
 	hbox.add_child(refresh_btn)
 
 	var help_btn := Button.new()
 	help_btn.text = "?"
 	help_btn.tooltip_text = "Help"
-	help_btn.flat = true
+	help_btn.flat = false
 	help_btn.pressed.connect(_on_help_pressed)
 	hbox.add_child(help_btn)
 
