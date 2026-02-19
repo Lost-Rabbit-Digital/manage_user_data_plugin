@@ -593,7 +593,7 @@ func _on_help_pressed() -> void:
 	vbox.add_theme_constant_override("separation", 12)
 
 	var title_label := Label.new()
-	title_label.text = "Manage User Data  v2.3.0"
+	title_label.text = "Manage User Data  v2.4.0"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var title_font_size := title_label.get_theme_font_size("font_size")
 	title_label.add_theme_font_size_override("font_size", title_font_size + 4)
