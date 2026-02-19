@@ -325,6 +325,10 @@ func _on_refresh_tree() -> void:
 	if tree == null:
 		return
 
+	var tween_out := create_tween()
+	tween_out.tween_property(tree, "modulate:a", 0.0, 0.15)
+	await tween_out.finished
+
 	tree.clear()
 
 	var base := EditorInterface.get_base_control()
@@ -343,6 +347,9 @@ func _on_refresh_tree() -> void:
 
 	populate_tree(root, "user://")
 	update_warning_label()
+
+	var tween_in := create_tween()
+	tween_in.tween_property(tree, "modulate:a", 1.0, 0.2)
 
 
 ## Updates the warning label to reflect the current selection.
