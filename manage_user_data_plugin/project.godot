@@ -11,9 +11,10 @@ config_version=5
 [application]
 
 config/name="manage_user_data_plugin"
+run/main_scene="uid://kdoodofub67l"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/clear_user_data/plugin.cfg")
+enabled=PackedStringArray("res://addons/manage_user_data/plugin.cfg")
