@@ -762,6 +762,7 @@ func _on_help_pressed() -> void:
 	content_vbox.add_theme_constant_override("separation", 10)
 
 	var content_margin := MarginContainer.new()
+	content_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content_margin.add_theme_constant_override("margin_left", 12)
 	content_margin.add_theme_constant_override("margin_right", 12)
 	content_margin.add_theme_constant_override("margin_top", 10)
@@ -885,12 +886,31 @@ func _on_help_pressed() -> void:
 	var links_hbox := HBoxContainer.new()
 	links_hbox.add_theme_constant_override("separation", 8)
 
+	var _make_outline_style := func(bg_alpha: float) -> StyleBoxFlat:
+		var s := StyleBoxFlat.new()
+		var accent := base.get_theme_color("accent_color", "Editor")
+		s.bg_color = Color(accent.r, accent.g, accent.b, bg_alpha)
+		s.border_color = accent
+		s.set_border_width_all(1)
+		s.corner_radius_top_left = 4
+		s.corner_radius_top_right = 4
+		s.corner_radius_bottom_left = 4
+		s.corner_radius_bottom_right = 4
+		s.content_margin_left = 10
+		s.content_margin_right = 10
+		s.content_margin_top = 4
+		s.content_margin_bottom = 4
+		return s
+
 	var credit_btn := Button.new()
 	credit_btn.text = "Lost Rabbit Digital"
 	credit_btn.icon = base.get_theme_icon("ExternalLink", "EditorIcons")
 	credit_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	credit_btn.flat = true
 	credit_btn.tooltip_text = "https://lostrabbit.digital/"
+	credit_btn.add_theme_stylebox_override("normal", _make_outline_style.call(0.0))
+	credit_btn.add_theme_stylebox_override("hover", _make_outline_style.call(0.12))
+	credit_btn.add_theme_stylebox_override("pressed", _make_outline_style.call(0.22))
+	credit_btn.add_theme_stylebox_override("focus", _make_outline_style.call(0.0))
 	credit_btn.pressed.connect(func() -> void:
 		OS.shell_open("https://lostrabbit.digital/")
 	)
@@ -902,8 +922,11 @@ func _on_help_pressed() -> void:
 	discord_btn.text = "Discord Community"
 	discord_btn.icon = base.get_theme_icon("ExternalLink", "EditorIcons")
 	discord_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	discord_btn.flat = true
 	discord_btn.tooltip_text = "https://discord.gg/Y7caBf7gBj"
+	discord_btn.add_theme_stylebox_override("normal", _make_outline_style.call(0.0))
+	discord_btn.add_theme_stylebox_override("hover", _make_outline_style.call(0.12))
+	discord_btn.add_theme_stylebox_override("pressed", _make_outline_style.call(0.22))
+	discord_btn.add_theme_stylebox_override("focus", _make_outline_style.call(0.0))
 	discord_btn.pressed.connect(func() -> void:
 		OS.shell_open("https://discord.gg/Y7caBf7gBj")
 	)
