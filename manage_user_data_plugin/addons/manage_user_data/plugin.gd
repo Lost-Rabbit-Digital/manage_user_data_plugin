@@ -3,6 +3,7 @@ extends EditorPlugin
 
 var button: Button
 var confirmation_dialog: ConfirmationDialog
+var help_dialog: AcceptDialog
 var tree: Tree
 var search_text: LineEdit
 var filter_menu_button: MenuButton
@@ -25,6 +26,9 @@ func _exit_tree() -> void:
 	if button:
 		remove_control_from_container(EditorPlugin.CONTAINER_TOOLBAR, button)
 		button.queue_free()
+
+	if help_dialog:
+		help_dialog.queue_free()
 
 	if confirmation_dialog:
 		confirmation_dialog.queue_free()
@@ -589,11 +593,13 @@ func format_file_size(bytes: int) -> String:
 
 ## Shows the help dialog with plugin info and credits.
 func _on_help_pressed() -> void:
-	var help_dialog := AcceptDialog.new()
+	if help_dialog:
+		help_dialog.grab_focus()
+		return
+	help_dialog = AcceptDialog.new()
 	help_dialog.title = "About Manage User Data"
 	help_dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS
-	help_dialog.min_size = Vector2i(360, 200)
-	help_dialog.max_size = Vector2i(360, 200)
+	help_dialog.min_size = Vector2i(640, 480)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
@@ -650,9 +656,13 @@ func _on_help_pressed() -> void:
 	help_dialog.add_child(vbox)
 	EditorInterface.get_base_control().add_child(help_dialog)
 	help_dialog.popup_centered()
-	help_dialog.confirmed.connect(help_dialog.queue_free)
-	help_dialog.canceled.connect(help_dialog.queue_free)
-	help_dialog.close_requested.connect(help_dialog.queue_free)
+	var _close_help := func() -> void:
+		if help_dialog:
+			help_dialog.queue_free()
+			help_dialog = null
+	help_dialog.confirmed.connect(_close_help)
+	help_dialog.canceled.connect(_close_help)
+	help_dialog.close_requested.connect(_close_help)
 
 
 func _on_confirmed_delete() -> void:
@@ -661,6 +671,9 @@ func _on_confirmed_delete() -> void:
 
 
 func _on_dialog_closed() -> void:
+	if help_dialog:
+		help_dialog.queue_free()
+		help_dialog = null
 	if confirmation_dialog:
 		confirmation_dialog.queue_free()
 		confirmation_dialog = null
