@@ -15,7 +15,6 @@ var active_type_filters: Array[int] = []
 
 func _enter_tree() -> void:
 	button = Button.new()
-	button.text = "User Data"
 	button.icon = EditorInterface.get_base_control().get_theme_icon("Filesystem", "EditorIcons")
 	button.tooltip_text = "Selectively delete user:// directory contents"
 	button.pressed.connect(_on_button_pressed)
