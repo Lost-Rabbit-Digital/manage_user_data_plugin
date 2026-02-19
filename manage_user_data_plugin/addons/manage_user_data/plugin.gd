@@ -13,7 +13,7 @@ var select_all_checkbox: CheckBox
 func _enter_tree() -> void:
 	button = Button.new()
 	button.text = "User Data"
-	button.icon = EditorInterface.get_base_control().get_theme_icon("Remove", "EditorIcons")
+	button.icon = EditorInterface.get_base_control().get_theme_icon("Filesystem", "EditorIcons")
 	button.tooltip_text = "Selectively delete user:// directory contents"
 	button.pressed.connect(_on_button_pressed)
 	add_control_to_container(EditorPlugin.CONTAINER_TOOLBAR, button)
@@ -43,6 +43,7 @@ func show_confirmation_dialog() -> void:
 	confirmation_dialog.min_size = Vector2i(500, 400)
 	confirmation_dialog.wrap_controls = true
 	confirmation_dialog.get_ok_button().text = "Delete Selected"
+	confirmation_dialog.get_ok_button().icon = base.get_theme_icon("Remove", "EditorIcons")
 
 	var vbox := VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -73,11 +74,17 @@ func show_confirmation_dialog() -> void:
 	filter_option.add_item("Folders Only", 2)
 	filter_option.add_item(".json", 3)
 	filter_option.add_item(".cache", 4)
+	filter_option.set_item_icon(0, base.get_theme_icon("FileTree", "EditorIcons"))
+	filter_option.set_item_icon(1, base.get_theme_icon("File", "EditorIcons"))
+	filter_option.set_item_icon(2, base.get_theme_icon("Folder", "EditorIcons"))
+	filter_option.set_item_icon(3, base.get_theme_icon("FileList", "EditorIcons"))
+	filter_option.set_item_icon(4, base.get_theme_icon("FileDead", "EditorIcons"))
 	filter_option.item_selected.connect(_on_filter_changed)
 	search_hbox.add_child(filter_option)
 
 	var clear_filter_btn := Button.new()
 	clear_filter_btn.text = "Clear"
+	clear_filter_btn.icon = base.get_theme_icon("Clear", "EditorIcons")
 	clear_filter_btn.pressed.connect(_on_clear_filters)
 	search_hbox.add_child(clear_filter_btn)
 
@@ -205,7 +212,7 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 			item.set_collapsed(true)
 			populate_tree(item, full_path)
 		else:
-			item.set_icon(1, base.get_theme_icon("File", "EditorIcons"))
+			item.set_icon(1, get_file_icon(file_name))
 			var file := FileAccess.open(full_path, FileAccess.READ)
 			if file:
 				item.set_text(2, "File (%s)" % format_file_size(file.get_length()))
@@ -477,6 +484,33 @@ func expand_matching_parents(item: TreeItem) -> void:
 	while child != null:
 		expand_matching_parents(child)
 		child = child.get_next()
+
+
+## Returns an editor icon for a file based on its extension.
+func get_file_icon(file_name: String) -> Texture2D:
+	var base := EditorInterface.get_base_control()
+	var ext := file_name.get_extension().to_lower()
+	match ext:
+		"json":
+			return base.get_theme_icon("FileList", "EditorIcons")
+		"cfg", "ini", "toml":
+			return base.get_theme_icon("FileTree", "EditorIcons")
+		"png", "jpg", "jpeg", "webp", "bmp", "svg":
+			return base.get_theme_icon("ImageTexture", "EditorIcons")
+		"wav", "ogg", "mp3":
+			return base.get_theme_icon("AudioStreamWAV", "EditorIcons")
+		"tscn":
+			return base.get_theme_icon("PackedScene", "EditorIcons")
+		"tres":
+			return base.get_theme_icon("Resource", "EditorIcons")
+		"gd":
+			return base.get_theme_icon("Script", "EditorIcons")
+		"cache":
+			return base.get_theme_icon("FileDead", "EditorIcons")
+		"save", "dat":
+			return base.get_theme_icon("Save", "EditorIcons")
+		_:
+			return base.get_theme_icon("File", "EditorIcons")
 
 
 ## Returns a human-readable string for the given byte count.
