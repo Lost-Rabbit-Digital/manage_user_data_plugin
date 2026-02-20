@@ -201,6 +201,7 @@ func show_confirmation_dialog() -> void:
 	tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	tree.custom_minimum_size = Vector2(0, 280)
 	tree.hide_root = false
+	tree.hide_folding = true
 	tree.set_columns(3)
 	tree.set_column_title(0, "")
 	tree.set_column_title(1, "Name")
