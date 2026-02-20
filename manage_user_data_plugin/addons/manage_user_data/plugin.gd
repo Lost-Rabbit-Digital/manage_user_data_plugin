@@ -95,6 +95,7 @@ func show_confirmation_dialog() -> void:
 	popup.set_item_icon(3, base.get_theme_icon("File", "EditorIcons"))
 	popup.id_pressed.connect(_on_filter_type_toggled)
 	search_hbox.add_child(filter_menu_button)
+	_apply_outline_to_button(filter_menu_button, base)
 
 	clear_filter_btn = Button.new()
 	clear_filter_btn.icon = base.get_theme_icon("Close", "EditorIcons")
@@ -107,14 +108,14 @@ func show_confirmation_dialog() -> void:
 	var refresh_btn := Button.new()
 	refresh_btn.icon = base.get_theme_icon("Reload", "EditorIcons")
 	refresh_btn.tooltip_text = "Refresh"
-	refresh_btn.flat = true
+	refresh_btn.flat = false
 	refresh_btn.pressed.connect(_on_refresh_tree)
 	search_hbox.add_child(refresh_btn)
 
 	var help_btn := Button.new()
 	help_btn.text = "?"
 	help_btn.tooltip_text = "Help"
-	help_btn.flat = true
+	help_btn.flat = false
 	help_btn.pressed.connect(_on_help_pressed)
 	search_hbox.add_child(help_btn)
 
@@ -139,6 +140,7 @@ func show_confirmation_dialog() -> void:
 	select_all_checkbox.button_pressed = true
 	select_all_checkbox.toggled.connect(_on_select_all_checkbox_toggled)
 	toolbar_hbox.add_child(select_all_checkbox)
+	_apply_outline_to_button(select_all_checkbox, base)
 
 	var toolbar_sep_v := VSeparator.new()
 	toolbar_hbox.add_child(toolbar_sep_v)
