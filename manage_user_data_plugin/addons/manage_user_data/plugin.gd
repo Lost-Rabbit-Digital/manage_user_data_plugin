@@ -964,6 +964,7 @@ func _on_help_pressed() -> void:
 func _on_confirmed_delete() -> void:
 	delete_selected_items()
 	_on_refresh_tree()
+	confirmation_dialog.call_deferred("popup_centered")
 
 
 func _on_dialog_closed() -> void:
