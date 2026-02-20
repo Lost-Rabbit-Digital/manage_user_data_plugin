@@ -61,23 +61,49 @@ func show_confirmation_dialog() -> void:
 	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_theme_constant_override("separation", 0)
 
-	# === SEARCH ROW (Gmail-style prominent search bar) ===
+	# === SEARCH ROW ===
 	var search_hbox := HBoxContainer.new()
 	search_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	search_hbox.add_theme_constant_override("separation", 4)
+
+	# Styled panel: dark background + accent-colored border, search icon on right
+	var search_panel := PanelContainer.new()
+	search_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var search_panel_style := StyleBoxFlat.new()
+	var accent_color := base.get_theme_color("accent_color", "Editor")
+	search_panel_style.bg_color = Color(0.08, 0.08, 0.08, 1.0)
+	search_panel_style.border_color = accent_color
+	search_panel_style.set_border_width_all(2)
+	search_panel_style.set_corner_radius_all(4)
+	search_panel_style.content_margin_left = 8
+	search_panel_style.content_margin_right = 6
+	search_panel_style.content_margin_top = 2
+	search_panel_style.content_margin_bottom = 2
+	search_panel.add_theme_stylebox_override("panel", search_panel_style)
+
+	var search_inner_hbox := HBoxContainer.new()
+	search_inner_hbox.add_theme_constant_override("separation", 4)
+	search_panel.add_child(search_inner_hbox)
+
+	search_text = LineEdit.new()
+	search_text.placeholder_text = "Filter Settings"
+	search_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	search_text.clear_button_enabled = false
+	search_text.text_changed.connect(_on_search_changed)
+	var le_transparent_style := StyleBoxEmpty.new()
+	search_text.add_theme_stylebox_override("normal", le_transparent_style)
+	search_text.add_theme_stylebox_override("focus", le_transparent_style)
+	search_text.add_theme_stylebox_override("read_only", le_transparent_style)
+	search_inner_hbox.add_child(search_text)
 
 	var search_icon := TextureRect.new()
 	search_icon.texture = base.get_theme_icon("Search", "EditorIcons")
 	search_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	search_icon.custom_minimum_size = Vector2(20, 20)
-	search_hbox.add_child(search_icon)
+	search_icon.modulate = accent_color
+	search_inner_hbox.add_child(search_icon)
 
-	search_text = LineEdit.new()
-	search_text.placeholder_text = "Search files and folders..."
-	search_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	search_text.clear_button_enabled = true
-	search_text.text_changed.connect(_on_search_changed)
-	search_hbox.add_child(search_text)
+	search_hbox.add_child(search_panel)
 
 	filter_menu_button = MenuButton.new()
 	filter_menu_button.text = "All Types"
