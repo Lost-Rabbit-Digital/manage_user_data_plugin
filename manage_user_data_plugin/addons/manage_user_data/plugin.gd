@@ -704,6 +704,7 @@ func _on_help_pressed() -> void:
 		plugin_version = cfg.get_value("plugin", "version", plugin_version)
 
 	help_dialog = AcceptDialog.new()
+	help_dialog.ok_button_text = "Close"
 	help_dialog.title = "Help — Manage User Data"
 	help_dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS
 	help_dialog.size = Vector2i(780, 580)
@@ -718,6 +719,7 @@ func _on_help_pressed() -> void:
 
 	# === HEADER ===
 	var header_hbox := HBoxContainer.new()
+	header_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	header_hbox.add_theme_constant_override("separation", 10)
 
 	var plugin_icon := TextureRect.new()
