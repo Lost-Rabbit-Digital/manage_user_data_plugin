@@ -210,7 +210,7 @@ func show_confirmation_dialog() -> void:
 
 	# === STATUS / WARNING BAR ===
 	warning_label = Label.new()
-	warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	warning_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	warning_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 
