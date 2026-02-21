@@ -55,6 +55,10 @@ func show_confirmation_dialog() -> void:
 	confirmation_dialog.wrap_controls = true
 	confirmation_dialog.get_ok_button().text = "Delete Selected"
 	confirmation_dialog.get_ok_button().icon = base.get_theme_icon("Remove", "EditorIcons")
+	confirmation_dialog.get_ok_button().add_theme_color_override("icon_normal_color", Color.RED)
+	confirmation_dialog.get_ok_button().add_theme_color_override("icon_hover_color", Color.RED)
+	confirmation_dialog.get_ok_button().add_theme_color_override("icon_pressed_color", Color.RED)
+	confirmation_dialog.get_ok_button().add_theme_color_override("icon_focus_color", Color.RED)
 
 	var vbox := VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -175,6 +179,10 @@ func show_confirmation_dialog() -> void:
 	var open_dir_btn := Button.new()
 	open_dir_btn.text = "Open Folder"
 	open_dir_btn.icon = base.get_theme_icon("Folder", "EditorIcons")
+	open_dir_btn.add_theme_color_override("icon_normal_color", Color.hex(0xE0A55CFF))
+	open_dir_btn.add_theme_color_override("icon_hover_color", Color.hex(0xE0A55CFF))
+	open_dir_btn.add_theme_color_override("icon_pressed_color", Color.hex(0xE0A55CFF))
+	open_dir_btn.add_theme_color_override("icon_focus_color", Color.hex(0xE0A55CFF))
 	open_dir_btn.tooltip_text = "Open user:// directory in file explorer"
 	open_dir_btn.flat = false
 	open_dir_btn.pressed.connect(func() -> void:
@@ -439,7 +447,7 @@ func update_warning_label() -> void:
 			items_text = "%d folder(s)" % folder_count_ref[0]
 
 		warning_label.text = (
-			"\u26a0  %s selected (%s) \u2014 deletion cannot be undone!"
+			"!  %s selected (%s) \u2014 deletion cannot be undone!"
 			% [items_text, format_file_size(total_size_ref[0])]
 		)
 		warning_label.add_theme_color_override(
@@ -729,7 +737,7 @@ func _on_help_pressed() -> void:
 	var base := EditorInterface.get_base_control()
 
 	var cfg := ConfigFile.new()
-	var plugin_version := "2.4.3"
+	var plugin_version := "2.4.5"
 	if cfg.load("res://addons/manage_user_data/plugin.cfg") == OK:
 		plugin_version = cfg.get_value("plugin", "version", plugin_version)
 
