@@ -1029,6 +1029,22 @@ func _on_help_pressed() -> void:
 	)
 	links_hbox.add_child(discord_btn)
 
+	links_hbox.add_child(VSeparator.new())
+
+	var github_btn := Button.new()
+	github_btn.text = "GitHub Repo"
+	github_btn.icon = base.get_theme_icon("ExternalLink", "EditorIcons")
+	github_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	github_btn.tooltip_text = "https://github.com/Lost-Rabbit-Digital/manage_user_data_plugin"
+	github_btn.add_theme_stylebox_override("normal", _make_outline_style.call(0.0))
+	github_btn.add_theme_stylebox_override("hover", _make_outline_style.call(0.12))
+	github_btn.add_theme_stylebox_override("pressed", _make_outline_style.call(0.22))
+	github_btn.add_theme_stylebox_override("focus", _make_outline_style.call(0.0))
+	github_btn.pressed.connect(func() -> void:
+		OS.shell_open("https://github.com/Lost-Rabbit-Digital/manage_user_data_plugin")
+	)
+	links_hbox.add_child(github_btn)
+
 	var links_margin := MarginContainer.new()
 	links_margin.add_theme_constant_override("margin_left", 8)
 	links_margin.add_theme_constant_override("margin_right", 8)
