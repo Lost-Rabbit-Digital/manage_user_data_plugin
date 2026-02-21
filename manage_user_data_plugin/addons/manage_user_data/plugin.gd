@@ -165,13 +165,7 @@ func show_confirmation_dialog() -> void:
 	select_all_checkbox.tooltip_text = "Select or deselect all visible items"
 	select_all_checkbox.button_pressed = true
 	select_all_checkbox.toggled.connect(_on_select_all_checkbox_toggled)
-	var checkbox_margin := MarginContainer.new()
-	checkbox_margin.add_theme_constant_override("margin_left", -6)
-	checkbox_margin.add_theme_constant_override("margin_right", -6)
-	checkbox_margin.add_theme_constant_override("margin_top", -3)
-	checkbox_margin.add_theme_constant_override("margin_bottom", -3)
-	checkbox_margin.add_child(select_all_checkbox)
-	toolbar_hbox.add_child(checkbox_margin)
+	toolbar_hbox.add_child(select_all_checkbox)
 	_apply_outline_to_button(select_all_checkbox, base)
 
 	var toolbar_sep_v := VSeparator.new()
