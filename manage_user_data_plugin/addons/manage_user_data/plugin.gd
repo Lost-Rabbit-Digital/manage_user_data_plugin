@@ -851,7 +851,7 @@ func _on_help_pressed() -> void:
 	_add_heading.call("Overview")
 	_add_body.call(
 		"Manage User Data lets you browse and selectively delete files from your project's " +
-		"user:// directory directly inside the Godot editor — no external file manager required."
+		"user:// directory — without leaving the editor."
 	)
 
 	# --- How to Use ---
@@ -859,8 +859,8 @@ func _on_help_pressed() -> void:
 
 	var steps: Array = [
 		["1.  Open the plugin", "Click \"User Data\" in the editor toolbar to open the main window."],
-		["2.  Browse files", "The tree lists every file and folder inside user://. Expand folders to explore nested contents."],
-		["3.  Select items", "Tick the checkbox next to each file or folder to mark it for deletion. Use \"Select All\" to toggle everything at once."],
+		["2.  Browse files", "The tree lists every file and folder inside user://. Folders are shown expanded by default."],
+		["3.  Select items", "To delete everything: leave all items checked. To delete specific files: uncheck \"Select All\", then tick only what you want."],
 		["4.  Search & filter", "Type in the search bar to find items by name. Use the \"All Types\" dropdown to show only files, folders, .json, or .cache entries."],
 		["5.  Review", "The status bar shows a live count and total size of your selection before you commit."],
 		["6.  Delete", "Click \"Delete Selected\" and confirm. Deletion is permanent and cannot be undone."],
@@ -929,6 +929,41 @@ func _on_help_pressed() -> void:
 		features_grid.add_child(row)
 	content_vbox.add_child(features_grid)
 
+	# --- What's in user:// ---
+	_add_heading.call("What's in user://")
+	_add_body.call(
+		"Godot writes to user:// when your game uses paths like \"user://save.json\". " +
+		"Common files to clean during development:"
+	)
+
+	var user_types: Array = [
+		[".cfg / .json", "Save data"],
+		[".log", "Log files"],
+		[".cache", "Engine/game caches"],
+	]
+
+	var user_types_grid := VBoxContainer.new()
+	user_types_grid.add_theme_constant_override("separation", 6)
+	for entry: Array in user_types:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		var ext_lbl := Label.new()
+		ext_lbl.text = entry[0]
+		ext_lbl.custom_minimum_size = Vector2(130, 0)
+		ext_lbl.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		row.add_child(ext_lbl)
+
+		var src_lbl := Label.new()
+		src_lbl.text = entry[1]
+		src_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		src_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(src_lbl)
+
+		user_types_grid.add_child(row)
+	content_vbox.add_child(user_types_grid)
+
 	# --- Tips ---
 	_add_heading.call("Tips & Notes")
 	_add_body.call(
@@ -945,6 +980,7 @@ func _on_help_pressed() -> void:
 
 	# === LINKS FOOTER ===
 	var links_hbox := HBoxContainer.new()
+	links_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	links_hbox.add_theme_constant_override("separation", 8)
 
 	var _make_outline_style := func(bg_alpha: float) -> StyleBoxFlat:
@@ -992,10 +1028,6 @@ func _on_help_pressed() -> void:
 		OS.shell_open("https://discord.gg/Y7caBf7gBj")
 	)
 	links_hbox.add_child(discord_btn)
-
-	var links_spacer := Control.new()
-	links_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	links_hbox.add_child(links_spacer)
 
 	var links_margin := MarginContainer.new()
 	links_margin.add_theme_constant_override("margin_left", 8)
