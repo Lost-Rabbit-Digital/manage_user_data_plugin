@@ -126,10 +126,10 @@ func show_confirmation_dialog() -> void:
 	clear_filter_btn = Button.new()
 	clear_filter_btn.icon = base.get_theme_icon("Close", "EditorIcons")
 	clear_filter_btn.tooltip_text = "Clear filters"
-	clear_filter_btn.flat = true
 	clear_filter_btn.pressed.connect(_on_clear_filters)
 	clear_filter_btn.visible = false
 	search_hbox.add_child(clear_filter_btn)
+	_apply_outline_to_button(clear_filter_btn, base)
 
 	var refresh_btn := Button.new()
 	refresh_btn.icon = base.get_theme_icon("Reload", "EditorIcons")
