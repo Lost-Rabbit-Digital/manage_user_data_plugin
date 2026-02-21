@@ -119,6 +119,7 @@ func show_confirmation_dialog() -> void:
 	popup.set_item_icon(1, base.get_theme_icon("Folder", "EditorIcons"))
 	popup.set_item_icon(2, base.get_theme_icon("File", "EditorIcons"))
 	popup.set_item_icon(3, base.get_theme_icon("File", "EditorIcons"))
+	popup.set_item_icon_modulate(1, Color(1, 0.71, 0.26, 1))
 	popup.id_pressed.connect(_on_filter_type_toggled)
 	search_hbox.add_child(filter_menu_button)
 	_apply_outline_to_button(filter_menu_button, base)
@@ -219,7 +220,7 @@ func show_confirmation_dialog() -> void:
 	root.set_editable(0, true)
 	root.set_text(0, "user://")
 	root.set_icon(0, base.get_theme_icon("Folder", "EditorIcons"))
-	root.set_icon_modulate(0, Color.hex(0xE0A55CFF))
+	root.set_icon_modulate(0, Color(1, 0.71, 0.26, 1))
 	root.set_text(1, "Directory")
 	var root_tooltip := "user://\nType: Directory\nPath: %s" % ProjectSettings.globalize_path("user://")
 	root.set_tooltip_text(0, root_tooltip)
@@ -284,7 +285,7 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 		if dir.current_is_dir():
 			item.set_text(1, "Folder")
 			item.set_icon(0, base.get_theme_icon("Folder", "EditorIcons"))
-			item.set_icon_modulate(0, Color.hex(0xE0A55CFF))
+			item.set_icon_modulate(0, Color(1, 0.71, 0.26, 1))
 			item.set_collapsed(false)
 			var folder_tooltip := "%s\nType: Folder\nPath: %s" % [file_name, full_path]
 			item.set_tooltip_text(0, folder_tooltip)
@@ -391,7 +392,7 @@ func _on_refresh_tree() -> void:
 	root.set_editable(0, true)
 	root.set_text(0, "user://")
 	root.set_icon(0, base.get_theme_icon("Folder", "EditorIcons"))
-	root.set_icon_modulate(0, Color.hex(0xE0A55CFF))
+	root.set_icon_modulate(0, Color(1, 0.71, 0.26, 1))
 	root.set_text(1, "Directory")
 	var root_tooltip := "user://\nType: Directory\nPath: %s" % ProjectSettings.globalize_path("user://")
 	root.set_tooltip_text(0, root_tooltip)
@@ -642,14 +643,18 @@ func get_file_icon(file_name: String) -> Texture2D:
 			return base.get_theme_icon("FileTree", "EditorIcons")
 		"png", "jpg", "jpeg", "webp", "bmp", "svg":
 			return base.get_theme_icon("ImageTexture", "EditorIcons")
-		"wav", "ogg", "mp3":
+		"wav":
 			return base.get_theme_icon("AudioStreamWAV", "EditorIcons")
+		"ogg":
+			return base.get_theme_icon("AudioStreamOggVorbis", "EditorIcons")
+		"mp3":
+			return base.get_theme_icon("AudioStreamMP3", "EditorIcons")
 		"tscn":
 			return base.get_theme_icon("PackedScene", "EditorIcons")
 		"tres":
 			return base.get_theme_icon("Resource", "EditorIcons")
 		"gd":
-			return base.get_theme_icon("Script", "EditorIcons")
+			return base.get_theme_icon("GDScript", "EditorIcons")
 		"cache":
 			return base.get_theme_icon("File", "EditorIcons")
 		"save", "dat":
