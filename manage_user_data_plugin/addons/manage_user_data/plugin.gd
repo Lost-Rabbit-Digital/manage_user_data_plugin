@@ -211,7 +211,7 @@ func show_confirmation_dialog() -> void:
 	tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	tree.custom_minimum_size = Vector2(0, 280)
 	tree.hide_root = false
-	tree.hide_folding = true
+	tree.hide_folding = false
 	tree.set_columns(3)
 	tree.set_column_title(0, "Name")
 	tree.set_column_title(1, "Type / Size")
@@ -241,6 +241,7 @@ func show_confirmation_dialog() -> void:
 	populate_tree(root, "user://")
 
 	tree.item_edited.connect(_on_tree_item_edited)
+	tree.item_mouse_selected.connect(_on_tree_item_mouse_selected)
 	vbox.add_child(tree)
 
 	vbox.add_child(HSeparator.new())
@@ -331,6 +332,25 @@ func _on_tree_item_edited() -> void:
 		return
 	propagate_check_state(edited_item, edited_item.is_checked(2))
 	update_warning_label()
+
+
+## Toggles expand/collapse when a folder item is clicked in the name or type column.
+func _on_tree_item_mouse_selected(mouse_position: Vector2, mouse_button_index: int) -> void:
+	if mouse_button_index != MOUSE_BUTTON_LEFT:
+		return
+	var item := tree.get_item_at_position(mouse_position)
+	if item == null:
+		return
+	var item_type_text := item.get_text(1)
+	var is_folder: bool = item_type_text.begins_with("Folder") or item_type_text == "Directory"
+	if not is_folder:
+		return
+	if item.get_first_child() == null:
+		return
+	var col := tree.get_column_at_position(mouse_position)
+	if col == 2:
+		return
+	item.set_collapsed(not item.is_collapsed())
 
 
 ## Recursively applies [param checked] to all children of [param item].
