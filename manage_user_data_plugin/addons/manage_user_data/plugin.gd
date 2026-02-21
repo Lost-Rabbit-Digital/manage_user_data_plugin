@@ -166,17 +166,6 @@ func show_confirmation_dialog() -> void:
 	toolbar_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	toolbar_hbox.add_theme_constant_override("separation", 6)
 
-	select_all_checkbox = CheckBox.new()
-	select_all_checkbox.text = "Select All"
-	select_all_checkbox.tooltip_text = "Select or deselect all visible items"
-	select_all_checkbox.button_pressed = true
-	select_all_checkbox.toggled.connect(_on_select_all_checkbox_toggled)
-	toolbar_hbox.add_child(select_all_checkbox)
-	_apply_outline_to_button(select_all_checkbox, base)
-
-	var toolbar_sep_v := VSeparator.new()
-	toolbar_hbox.add_child(toolbar_sep_v)
-
 	var open_dir_btn := Button.new()
 	open_dir_btn.text = "Open Folder"
 	open_dir_btn.icon = base.get_theme_icon("Folder", "EditorIcons")
@@ -194,6 +183,17 @@ func show_confirmation_dialog() -> void:
 	var toolbar_spacer := Control.new()
 	toolbar_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	toolbar_hbox.add_child(toolbar_spacer)
+
+	var toolbar_sep_v := VSeparator.new()
+	toolbar_hbox.add_child(toolbar_sep_v)
+
+	select_all_checkbox = CheckBox.new()
+	select_all_checkbox.text = "Select All"
+	select_all_checkbox.tooltip_text = "Select or deselect all visible items"
+	select_all_checkbox.button_pressed = true
+	select_all_checkbox.toggled.connect(_on_select_all_checkbox_toggled)
+	toolbar_hbox.add_child(select_all_checkbox)
+	_apply_outline_to_button(select_all_checkbox, base)
 
 	var toolbar_margin := MarginContainer.new()
 	toolbar_margin.add_theme_constant_override("margin_left", 4)
