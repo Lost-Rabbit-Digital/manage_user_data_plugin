@@ -960,6 +960,7 @@ func _on_help_pressed() -> void:
 
 	# === LINKS FOOTER ===
 	var links_hbox := HBoxContainer.new()
+	links_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	links_hbox.add_theme_constant_override("separation", 8)
 
 	var _make_outline_style := func(bg_alpha: float) -> StyleBoxFlat:
@@ -1007,10 +1008,6 @@ func _on_help_pressed() -> void:
 		OS.shell_open("https://discord.gg/Y7caBf7gBj")
 	)
 	links_hbox.add_child(discord_btn)
-
-	var links_spacer := Control.new()
-	links_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	links_hbox.add_child(links_spacer)
 
 	var links_margin := MarginContainer.new()
 	links_margin.add_theme_constant_override("margin_left", 8)
