@@ -203,25 +203,28 @@ func show_confirmation_dialog() -> void:
 	tree.custom_minimum_size = Vector2(0, 280)
 	tree.hide_root = false
 	tree.hide_folding = true
-	tree.set_columns(2)
+	tree.set_columns(3)
 	tree.set_column_title(0, "Name")
 	tree.set_column_title(1, "Type / Size")
+	tree.set_column_title(2, "Select")
 	tree.set_column_titles_visible(true)
 	tree.set_column_expand(0, true)
 	tree.set_column_expand(1, true)
+	tree.set_column_expand(2, false)
 	tree.set_column_custom_minimum_width(0, 200)
 	tree.set_column_custom_minimum_width(1, 110)
+	tree.set_column_custom_minimum_width(2, 60)
 	tree.set_column_expand_ratio(0, 5)
 	tree.set_column_expand_ratio(1, 1)
 
 	var root := tree.create_item()
-	root.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
-	root.set_checked(0, true)
-	root.set_editable(0, true)
 	root.set_text(0, "user://")
 	root.set_icon(0, base.get_theme_icon("Folder", "EditorIcons"))
 	root.set_icon_modulate(0, Color(1, 0.71, 0.26, 1))
 	root.set_text(1, "Directory")
+	root.set_cell_mode(2, TreeItem.CELL_MODE_CHECK)
+	root.set_checked(2, true)
+	root.set_editable(2, true)
 	var root_tooltip := "user://\nType: Directory\nPath: %s" % ProjectSettings.globalize_path("user://")
 	root.set_tooltip_text(0, root_tooltip)
 	root.set_tooltip_text(1, root_tooltip)
@@ -277,10 +280,10 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 		var item := tree.create_item(parent_item)
 		item.set_metadata(1, full_path)
 
-		item.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
-		item.set_checked(0, true)
-		item.set_editable(0, true)
 		item.set_text(0, file_name)
+		item.set_cell_mode(2, TreeItem.CELL_MODE_CHECK)
+		item.set_checked(2, true)
+		item.set_editable(2, true)
 
 		if dir.current_is_dir():
 			item.set_text(1, "Folder")
@@ -317,7 +320,7 @@ func _on_tree_item_edited() -> void:
 	var edited_item := tree.get_edited()
 	if edited_item == null:
 		return
-	propagate_check_state(edited_item, edited_item.is_checked(0))
+	propagate_check_state(edited_item, edited_item.is_checked(2))
 	update_warning_label()
 
 
@@ -325,7 +328,7 @@ func _on_tree_item_edited() -> void:
 func propagate_check_state(item: TreeItem, checked: bool) -> void:
 	var child := item.get_first_child()
 	while child != null:
-		child.set_checked(0, checked)
+		child.set_checked(2, checked)
 		propagate_check_state(child, checked)
 		child = child.get_next()
 
@@ -333,7 +336,7 @@ func propagate_check_state(item: TreeItem, checked: bool) -> void:
 func _on_select_all_checkbox_toggled(checked: bool) -> void:
 	var root := tree.get_root()
 	if root:
-		root.set_checked(0, checked)
+		root.set_checked(2, checked)
 		propagate_check_state(root, checked)
 		update_warning_label()
 
@@ -366,7 +369,7 @@ func _update_select_all_checkbox() -> void:
 ## Counts total and checked tree items recursively into [param counts] ([total, checked]).
 func _count_tree_items(item: TreeItem, counts: Array) -> void:
 	counts[0] += 1
-	if item.is_checked(0):
+	if item.is_checked(2):
 		counts[1] += 1
 	var child := item.get_first_child()
 	while child != null:
@@ -387,13 +390,13 @@ func _on_refresh_tree() -> void:
 
 	var base := EditorInterface.get_base_control()
 	var root := tree.create_item()
-	root.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
-	root.set_checked(0, true)
-	root.set_editable(0, true)
 	root.set_text(0, "user://")
 	root.set_icon(0, base.get_theme_icon("Folder", "EditorIcons"))
 	root.set_icon_modulate(0, Color(1, 0.71, 0.26, 1))
 	root.set_text(1, "Directory")
+	root.set_cell_mode(2, TreeItem.CELL_MODE_CHECK)
+	root.set_checked(2, true)
+	root.set_editable(2, true)
 	var root_tooltip := "user://\nType: Directory\nPath: %s" % ProjectSettings.globalize_path("user://")
 	root.set_tooltip_text(0, root_tooltip)
 	root.set_tooltip_text(1, root_tooltip)
@@ -457,11 +460,11 @@ func collect_checked_items_with_stats(
 	if item == null:
 		return
 
-	if item.is_checked(0):
+	if item.is_checked(2):
 		var path = item.get_metadata(1)
 		if path:
 			result.append(path)
-			var is_folder: bool = item.get_text(2).begins_with("Folder")
+			var is_folder: bool = item.get_text(1).begins_with("Folder")
 			if is_folder:
 				folder_count_ref[0] += 1
 				total_size_ref[0] += calculate_folder_size(path)
@@ -572,8 +575,8 @@ func filter_tree_item(item: TreeItem, search_term: String, filter_types: Array[i
 	if item == null:
 		return false
 
-	var item_name := item.get_text(1).to_lower()
-	var item_type_text := item.get_text(2)
+	var item_name := item.get_text(0).to_lower()
+	var item_type_text := item.get_text(1)
 	var is_folder: bool = item_type_text.begins_with("Folder") or item_type_text == "Directory"
 
 	var matches_search: bool = search_term.is_empty() or item_name.contains(search_term)
@@ -615,7 +618,7 @@ func expand_matching_parents(item: TreeItem) -> void:
 	if item == null:
 		return
 
-	var item_type_text := item.get_text(2)
+	var item_type_text := item.get_text(1)
 	var is_folder: bool = item_type_text.begins_with("Folder") or item_type_text == "Directory"
 
 	if is_folder and item.visible:
@@ -1034,7 +1037,7 @@ func collect_checked_items(item: TreeItem, result: Array) -> void:
 	if item == null:
 		return
 
-	if item.is_checked(0):
+	if item.is_checked(2):
 		var path = item.get_metadata(1)
 		if path:
 			result.append(path)
