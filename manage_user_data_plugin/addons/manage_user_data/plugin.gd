@@ -105,7 +105,7 @@ func show_confirmation_dialog() -> void:
 	search_icon.texture = base.get_theme_icon("Search", "EditorIcons")
 	search_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	search_icon.custom_minimum_size = Vector2(20, 20)
-	search_icon.modulate = accent_color
+	search_icon.modulate = Color.WHITE
 	search_inner_hbox.add_child(search_icon)
 
 	search_hbox.add_child(search_panel)
