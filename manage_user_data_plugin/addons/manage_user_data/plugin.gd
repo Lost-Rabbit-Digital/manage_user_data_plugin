@@ -53,6 +53,7 @@ func show_confirmation_dialog() -> void:
 	confirmation_dialog.size = Vector2i(780, 580)
 	confirmation_dialog.min_size = Vector2i(540, 420)
 	confirmation_dialog.wrap_controls = true
+	confirmation_dialog.get_cancel_button().text = "Close"
 	confirmation_dialog.get_ok_button().text = "Delete Selected"
 	confirmation_dialog.get_ok_button().icon = base.get_theme_icon("Remove", "EditorIcons")
 	var _delete_icon_color := base.get_theme_color("error_color", "Editor")
