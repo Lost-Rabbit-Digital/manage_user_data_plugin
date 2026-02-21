@@ -2,7 +2,7 @@
 
 A Godot 4 editor plugin for browsing and selectively deleting your project's `user://` directory — without leaving the editor.
 
-**Requires Godot 4.3+**
+**Requires Godot 4.1+**
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Y7caBf7gBj)
 
