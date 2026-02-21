@@ -4,6 +4,8 @@ A Godot 4 editor plugin for browsing and selectively deleting your project's `us
 
 **Requires Godot 4.3+**
 
+<!-- screenshot: editor toolbar showing the "User Data" button highlighted -->
+
 ---
 
 ## Install
@@ -30,18 +32,23 @@ A Godot 4 editor plugin for browsing and selectively deleting your project's `us
 
 ## Usage
 
-A **User Data** button appears in the editor toolbar. Click it to open the dialog.
+Click the **User Data** button in the editor toolbar to open the dialog.
+
+<!-- screenshot: main plugin dialog showing the file tree, toolbar, and search bar -->
 
 | Action | How |
 |---|---|
 | Delete everything | Leave all items checked → **Delete Selected** |
-| Delete specific files | **Select All** checkbox to deselect all → tick what you want → **Delete Selected** |
-| Find a file | Type in the **Search** bar or use the **All Types** filter dropdown |
-| Reset filters | Click the **×** button next to the filter dropdown |
-| Refresh the list | Click the **⟳** (reload) icon |
+| Delete specific files | Uncheck **Select All** → tick what you want → **Delete Selected** |
+| Find a file | Type in the **Search** bar |
+| Filter by type | Use the **All Types** dropdown (Files, Folders, `.json`, `.cache`) |
+| Clear filters | Click **×** next to the dropdown |
+| Refresh the list | Click the **⟳** icon |
 | Open in file manager | Click **Open Folder** |
 
-> Deletion is permanent and cannot be undone. The status bar shows a live count and total size of what will be deleted before you confirm.
+<!-- screenshot: filter dropdown open showing the type options -->
+
+The status bar shows a live count and total size of selected items before you confirm. Deletion is permanent and cannot be undone.
 
 ---
 
@@ -65,6 +72,8 @@ Godot writes to `user://` when your game uses paths like `"user://save.json"`. C
 
 ---
 
-## License
+## Credits
 
-MIT — see [LICENSE](LICENSE) for details.
+Made by [Lost Rabbit Digital](https://lostrabbit.digital/) · [Discord](https://discord.gg/Y7caBf7gBj)
+
+MIT — see [LICENSE](LICENSE)
