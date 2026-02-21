@@ -758,7 +758,7 @@ func _on_help_pressed() -> void:
 	var base := EditorInterface.get_base_control()
 
 	var cfg := ConfigFile.new()
-	var plugin_version := "2.4.5"
+	var plugin_version := "2.4.6"
 	if cfg.load("res://addons/manage_user_data/plugin.cfg") == OK:
 		plugin_version = cfg.get_value("plugin", "version", plugin_version)
 
