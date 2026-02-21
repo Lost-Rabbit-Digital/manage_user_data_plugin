@@ -4,6 +4,8 @@ A Godot 4 editor plugin for browsing and selectively deleting your project's `us
 
 **Requires Godot 4.3+**
 
+[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Y7caBf7gBj)
+
 <!-- screenshot: editor toolbar showing the "User Data" button highlighted -->
 
 ---
