@@ -55,10 +55,11 @@ func show_confirmation_dialog() -> void:
 	confirmation_dialog.wrap_controls = true
 	confirmation_dialog.get_ok_button().text = "Delete Selected"
 	confirmation_dialog.get_ok_button().icon = base.get_theme_icon("Remove", "EditorIcons")
-	confirmation_dialog.get_ok_button().add_theme_color_override("icon_normal_color", Color.RED)
-	confirmation_dialog.get_ok_button().add_theme_color_override("icon_hover_color", Color.RED)
-	confirmation_dialog.get_ok_button().add_theme_color_override("icon_pressed_color", Color.RED)
-	confirmation_dialog.get_ok_button().add_theme_color_override("icon_focus_color", Color.RED)
+	var _delete_icon_color := base.get_theme_color("error_color", "Editor")
+	confirmation_dialog.get_ok_button().add_theme_color_override("icon_normal_color", _delete_icon_color)
+	confirmation_dialog.get_ok_button().add_theme_color_override("icon_hover_color", _delete_icon_color)
+	confirmation_dialog.get_ok_button().add_theme_color_override("icon_pressed_color", _delete_icon_color)
+	confirmation_dialog.get_ok_button().add_theme_color_override("icon_focus_color", _delete_icon_color)
 
 	var vbox := VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -447,7 +448,7 @@ func update_warning_label() -> void:
 			items_text = "%d folder(s)" % folder_count_ref[0]
 
 		warning_label.text = (
-			"!  %s selected (%s) \u2014 deletion cannot be undone!"
+			"%s selected (%s) \u2014 deletion cannot be undone"
 			% [items_text, format_file_size(total_size_ref[0])]
 		)
 		warning_label.add_theme_color_override(
