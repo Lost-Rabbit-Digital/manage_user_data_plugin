@@ -14,6 +14,8 @@ plugin_icon.svg export-ignore
 screenshot_1.png export-ignore
 screenshot_2.png export-ignore
 screenshot_3.png export-ignore
+screenshot_4.png export-ignore
+screenshot_5.png export-ignore
 manage_user_data_plugin/icon.svg export-ignore
 manage_user_data_plugin/icon.svg.import export-ignore
 manage_user_data_plugin/main.gd export-ignore
