@@ -1,6 +1,6 @@
 # Manage User Data
 
-<img src="plugin_icon.svg" width="64" height="64" alt="Manage User Data icon">
+<img src="plugin_icon.png" width="64" height="64" alt="Manage User Data icon">
 
 A Godot 4 editor plugin for browsing and selectively deleting your project's `user://` directory without leaving the editor.
 
