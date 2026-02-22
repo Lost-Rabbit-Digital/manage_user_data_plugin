@@ -10,8 +10,8 @@ README.md export-ignore
 manage_user_data_plugin/.editorconfig export-ignore
 manage_user_data_plugin/.gitattributes export-ignore
 manage_user_data_plugin/.gitignore export-ignore
-manage_user_data_plugin/icon.png export-ignore
-manage_user_data_plugin/icon.png.import export-ignore
+manage_user_data_plugin/plugin_icon.svg export-ignore
+manage_user_data_plugin/plugin_icon.svg.import export-ignore
 manage_user_data_plugin/icon.svg export-ignore
 manage_user_data_plugin/icon.svg.import export-ignore
 manage_user_data_plugin/main.gd export-ignore
