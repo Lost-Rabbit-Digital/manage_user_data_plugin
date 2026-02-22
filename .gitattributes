@@ -11,7 +11,9 @@ manage_user_data_plugin/.editorconfig export-ignore
 manage_user_data_plugin/.gitattributes export-ignore
 manage_user_data_plugin/.gitignore export-ignore
 plugin_icon.svg export-ignore
-plugin_icon.svg.import export-ignore
+screenshot_1.png export-ignore
+screenshot_2.png export-ignore
+screenshot_3.png export-ignore
 manage_user_data_plugin/icon.svg export-ignore
 manage_user_data_plugin/icon.svg.import export-ignore
 manage_user_data_plugin/main.gd export-ignore
