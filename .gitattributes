@@ -1,2 +1,18 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Exclude demo project and dev files from `git archive` (e.g. GitHub ZIP downloads).
+# Only the addons/ plugin folder will be included in the downloaded archive.
+.gitattributes export-ignore
+.gitignore export-ignore
+LICENSE export-ignore
+README.md export-ignore
+manage_user_data_plugin/.editorconfig export-ignore
+manage_user_data_plugin/.gitattributes export-ignore
+manage_user_data_plugin/.gitignore export-ignore
+manage_user_data_plugin/icon.png export-ignore
+manage_user_data_plugin/icon.png.import export-ignore
+manage_user_data_plugin/main.gd export-ignore
+manage_user_data_plugin/main.gd.uid export-ignore
+manage_user_data_plugin/main.tscn export-ignore
+manage_user_data_plugin/project.godot export-ignore
