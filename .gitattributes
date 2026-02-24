@@ -14,6 +14,12 @@ screenshot_2.png export-ignore
 screenshot_3.png export-ignore
 screenshot_4.png export-ignore
 screenshot_5.png export-ignore
+plugin_icon.png.import export-ignore
+screenshot_1.png.import export-ignore
+screenshot_2.png.import export-ignore
+screenshot_3.png.import export-ignore
+screenshot_4.png.import export-ignore
+screenshot_5.png.import export-ignore
 icon.svg export-ignore
 icon.svg.import export-ignore
 main.gd export-ignore
