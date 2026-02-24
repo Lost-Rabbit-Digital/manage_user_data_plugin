@@ -14,7 +14,8 @@ config/name="manage_user_data_plugin"
 config/version="2.4.6"
 run/main_scene="uid://kdoodofub67l"
 config/features=PackedStringArray("4.5", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="uid://dbdiskknw1asj"
+config/tags=PackedStringArray("active", "open_sourced", "plugin", "utility")
 
 [editor_plugins]
 
