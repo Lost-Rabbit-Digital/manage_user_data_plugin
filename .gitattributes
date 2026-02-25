@@ -8,13 +8,8 @@
 .editorconfig export-ignore
 LICENSE export-ignore
 README.md export-ignore
-plugin_icon.png export-ignore
-screenshot_1.png export-ignore
-screenshot_2.png export-ignore
-screenshot_3.png export-ignore
-screenshot_4.png export-ignore
-screenshot_5.png export-ignore
-icon.svg export-ignore
+*.png export-ignore
+*.svg export-ignore
 *.import export-ignore
 main.gd export-ignore
 main.gd.uid export-ignore
