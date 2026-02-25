@@ -15,7 +15,7 @@ screenshot_3.png export-ignore
 screenshot_4.png export-ignore
 screenshot_5.png export-ignore
 icon.svg export-ignore
-icon.svg.import export-ignore
+*.import export-ignore
 main.gd export-ignore
 main.gd.uid export-ignore
 main.tscn export-ignore
