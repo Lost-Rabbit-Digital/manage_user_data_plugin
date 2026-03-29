@@ -181,6 +181,18 @@ func show_confirmation_dialog() -> void:
 	)
 	toolbar_hbox.add_child(open_dir_btn)
 
+	var copy_logs_btn := Button.new()
+	copy_logs_btn.text = "Copy Logs"
+	copy_logs_btn.icon = base.get_theme_icon("ActionCopy", "EditorIcons")
+	copy_logs_btn.add_theme_color_override("icon_normal_color", Color.hex(0xE0A55CFF))
+	copy_logs_btn.add_theme_color_override("icon_hover_color", Color.hex(0xE0A55CFF))
+	copy_logs_btn.add_theme_color_override("icon_pressed_color", Color.hex(0xE0A55CFF))
+	copy_logs_btn.add_theme_color_override("icon_focus_color", Color.hex(0xE0A55CFF))
+	copy_logs_btn.tooltip_text = "Copy de-duplicated engine logs and errors to clipboard"
+	copy_logs_btn.flat = false
+	copy_logs_btn.pressed.connect(_on_copy_logs_pressed.bind(copy_logs_btn))
+	toolbar_hbox.add_child(copy_logs_btn)
+
 	var toolbar_spacer := Control.new()
 	toolbar_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	toolbar_hbox.add_child(toolbar_spacer)
@@ -1146,6 +1158,52 @@ func _apply_outline_to_button(btn: Button, base: Control) -> void:
 		style.content_margin_top = 4
 		style.content_margin_bottom = 4
 	btn.add_theme_stylebox_override("normal", style)
+
+
+## Reads the Godot engine log file, de-duplicates lines, and copies the result
+## to the clipboard. Shows brief feedback on the button.
+func _on_copy_logs_pressed(btn: Button) -> void:
+	var log_path := "user://logs/godot.log"
+	if not FileAccess.file_exists(log_path):
+		DisplayServer.clipboard_set("")
+		_show_copy_feedback(btn, "No log file found")
+		return
+
+	var file := FileAccess.open(log_path, FileAccess.READ)
+	if file == null:
+		DisplayServer.clipboard_set("")
+		_show_copy_feedback(btn, "Failed to read logs")
+		return
+
+	var seen := {}
+	var unique_lines: PackedStringArray = []
+	while not file.eof_reached():
+		var line := file.get_line()
+		if line.strip_edges() == "":
+			continue
+		if not seen.has(line):
+			seen[line] = true
+			unique_lines.append(line)
+	file.close()
+
+	if unique_lines.is_empty():
+		DisplayServer.clipboard_set("")
+		_show_copy_feedback(btn, "Logs empty")
+		return
+
+	DisplayServer.clipboard_set("\n".join(unique_lines))
+	_show_copy_feedback(btn, "Copied!")
+
+
+## Shows brief feedback text on a button, then restores the original text.
+func _show_copy_feedback(btn: Button, message: String) -> void:
+	var original_text := btn.text
+	btn.text = message
+	btn.disabled = true
+	get_tree().create_timer(1.5).timeout.connect(func() -> void:
+		btn.text = original_text
+		btn.disabled = false
+	)
 
 
 ## Recursively deletes all contents inside [param path] without removing the
