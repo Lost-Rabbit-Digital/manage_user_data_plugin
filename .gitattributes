@@ -11,6 +11,7 @@ README.md export-ignore
 *.png export-ignore
 *.svg export-ignore
 *.import export-ignore
+*.png.import export-ignore
 main.gd export-ignore
 main.gd.uid export-ignore
 main.tscn export-ignore
