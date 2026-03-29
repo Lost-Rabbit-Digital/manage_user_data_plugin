@@ -911,6 +911,8 @@ func _on_help_pressed() -> void:
 		["Bulk Selection", "\"Select All\" selects or deselects every visible item in one click."],
 		["File Sizes", "Inline file sizes on every entry; the status bar totals the size of your current selection."],
 		["Open in OS", "\"Open Folder\" launches user:// in your operating system's native file manager."],
+		["Copy Logs", "Copy the contents of every log file in user://logs/ to your clipboard in one click."],
+		["De-dupe Logs", "Copy godot.log with duplicate lines collapsed into \"(×N)\" summaries for compact sharing."],
 		["Refresh", "Rescans user:// at any time without reopening the plugin window."],
 	]
 
