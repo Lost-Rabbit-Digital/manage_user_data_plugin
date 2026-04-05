@@ -16,3 +16,4 @@ main.gd export-ignore
 main.gd.uid export-ignore
 main.tscn export-ignore
 project.godot export-ignore
+tests/ export-ignore
