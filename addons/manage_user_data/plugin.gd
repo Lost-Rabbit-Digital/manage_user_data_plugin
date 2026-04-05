@@ -14,6 +14,10 @@ var active_type_filters: Array[int] = []
 
 
 func _enter_tree() -> void:
+	var godot_version := Engine.get_version_info()
+	if godot_version.major < 4 or (godot_version.major == 4 and godot_version.minor < 3):
+		push_warning("Manage User Data: This plugin requires Godot 4.3+. You are running %s. Some features may not work." % godot_version.string)
+
 	button = Button.new()
 	button.icon = EditorInterface.get_base_control().get_theme_icon("Filesystem", "EditorIcons")
 	button.tooltip_text = "Selectively delete user:// directory contents"
@@ -285,10 +289,12 @@ func show_confirmation_dialog() -> void:
 
 
 ## Recursively populates the tree with the contents of [param path].
+## Handles unreadable directories and corrupted/locked files gracefully.
 func populate_tree(parent_item: TreeItem, path: String) -> void:
 	var base := EditorInterface.get_base_control()
 	var dir := DirAccess.open(path)
 	if dir == null:
+		push_warning("Manage User Data: Cannot open directory '%s' (error %d)" % [path, DirAccess.get_open_error()])
 		return
 
 	dir.list_dir_begin()
@@ -328,10 +334,13 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 				item.set_tooltip_text(0, file_tooltip)
 				item.set_tooltip_text(1, file_tooltip)
 			else:
-				item.set_text(1, "File")
-				var file_tooltip := "%s\nType: %s\nPath: %s" % [file_name, get_file_type_label(file_name), full_path]
+				var err_code := FileAccess.get_open_error()
+				var size_label := "unreadable (error %d)" % err_code
+				item.set_text(1, "File (%s)" % size_label)
+				var file_tooltip := "%s\nType: %s\nSize: %s\nPath: %s" % [file_name, get_file_type_label(file_name), size_label, full_path]
 				item.set_tooltip_text(0, file_tooltip)
 				item.set_tooltip_text(1, file_tooltip)
+				push_warning("Manage User Data: Cannot read file '%s' (error %d)" % [full_path, err_code])
 
 		file_name = dir.get_next()
 
@@ -525,6 +534,7 @@ func collect_checked_items_with_stats(
 
 
 ## Returns the total byte size of all files under [param path], recursively.
+## Skips unreadable files/directories without aborting the entire calculation.
 func calculate_folder_size(path: String) -> int:
 	var total_size := 0
 	var dir := DirAccess.open(path)
@@ -1082,7 +1092,9 @@ func _on_help_pressed() -> void:
 
 
 func _on_confirmed_delete() -> void:
-	delete_selected_items()
+	var result := delete_selected_items()
+	if not result.failed.is_empty():
+		push_warning("Manage User Data: %d item(s) could not be deleted." % result.failed.size())
 	_on_refresh_tree()
 	confirmation_dialog.call_deferred("popup_centered")
 
@@ -1101,7 +1113,8 @@ func _on_dialog_closed() -> void:
 
 
 ## Deletes all checked items, deepest paths first to avoid parent-before-child issues.
-func delete_selected_items() -> void:
+## Returns a dictionary with "deleted" (int) and "failed" (Array[String]) for reporting.
+func delete_selected_items() -> Dictionary:
 	var items_to_delete: Array = []
 	collect_checked_items(tree.get_root(), items_to_delete)
 
@@ -1109,8 +1122,15 @@ func delete_selected_items() -> void:
 		return a.count("/") > b.count("/")
 	)
 
+	var deleted_count := 0
+	var failed_paths: Array[String] = []
+
 	for path: String in items_to_delete:
 		if path == "user://":
+			continue
+
+		if not FileAccess.file_exists(path) and not DirAccess.dir_exists_absolute(path):
+			push_warning("Manage User Data: Path no longer exists, skipping: %s" % path)
 			continue
 
 		var error: int
@@ -1121,7 +1141,12 @@ func delete_selected_items() -> void:
 			error = DirAccess.remove_absolute(path)
 
 		if error != OK:
-			push_error("Failed to delete: %s (Error Code: %d)" % [path, error])
+			failed_paths.append(path)
+			push_error("Manage User Data: Failed to delete '%s' (error %d)" % [path, error])
+		else:
+			deleted_count += 1
+
+	return {"deleted": deleted_count, "failed": failed_paths}
 
 
 ## Recursively collects all checked items into [param result].
@@ -1164,6 +1189,7 @@ func _apply_outline_to_button(btn: Button, base: Control) -> void:
 
 ## Reads the Godot engine log file, de-duplicates lines, and copies the result
 ## to the clipboard. Shows brief feedback on the button.
+## Handles corrupted or excessively large log files gracefully.
 func _on_copy_logs_pressed(btn: Button) -> void:
 	var log_path := "user://logs/godot.log"
 	if not FileAccess.file_exists(log_path):
@@ -1175,6 +1201,14 @@ func _on_copy_logs_pressed(btn: Button) -> void:
 	if file == null:
 		DisplayServer.clipboard_set("")
 		_show_copy_feedback(btn, "Failed to read logs")
+		return
+
+	# Guard against excessively large log files (>50 MB)
+	var log_size := file.get_length()
+	if log_size > 50 * 1024 * 1024:
+		file.close()
+		DisplayServer.clipboard_set("")
+		_show_copy_feedback(btn, "Log too large (%s)" % format_file_size(log_size))
 		return
 
 	var seen := {}
@@ -1209,10 +1243,11 @@ func _show_copy_feedback(btn: Button, message: String) -> void:
 
 
 ## Recursively deletes all contents inside [param path] without removing the
-## directory itself.
+## directory itself. Logs warnings for any items that fail to delete.
 func delete_directory_contents(path: String) -> void:
 	var dir := DirAccess.open(path)
 	if dir == null:
+		push_warning("Manage User Data: Cannot open directory for deletion: '%s'" % path)
 		return
 
 	dir.list_dir_begin()
@@ -1222,8 +1257,12 @@ func delete_directory_contents(path: String) -> void:
 			var full_path := path.path_join(file_name)
 			if dir.current_is_dir():
 				delete_directory_contents(full_path)
-				DirAccess.remove_absolute(full_path)
+				var err := DirAccess.remove_absolute(full_path)
+				if err != OK:
+					push_warning("Manage User Data: Could not remove directory '%s' (error %d)" % [full_path, err])
 			else:
-				DirAccess.remove_absolute(full_path)
+				var err := DirAccess.remove_absolute(full_path)
+				if err != OK:
+					push_warning("Manage User Data: Could not remove file '%s' (error %d)" % [full_path, err])
 		file_name = dir.get_next()
 	dir.list_dir_end()
