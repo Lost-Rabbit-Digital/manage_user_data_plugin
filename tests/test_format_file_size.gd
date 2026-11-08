@@ -1,4 +1,4 @@
-extends Node
+extends SceneTree
 ## Unit tests for format_file_size().
 ## Run via: godot --headless --script tests/test_format_file_size.gd
 
@@ -6,7 +6,7 @@ var _pass_count := 0
 var _fail_count := 0
 
 
-func _ready() -> void:
+func _initialize() -> void:
 	print("=== test_format_file_size ===")
 	test_zero_bytes()
 	test_bytes_range()
@@ -15,7 +15,7 @@ func _ready() -> void:
 	test_boundary_1024()
 	test_boundary_1mb()
 	_print_summary()
-	get_tree().quit(0 if _fail_count == 0 else 1)
+	quit(0 if _fail_count == 0 else 1)
 
 
 func format_file_size(bytes: int) -> String:

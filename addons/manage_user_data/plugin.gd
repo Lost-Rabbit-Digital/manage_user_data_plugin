@@ -1,6 +1,8 @@
 @tool
 extends EditorPlugin
 
+const UserDataOps := preload("res://addons/manage_user_data/user_data_ops.gd")
+
 var button: Button
 var confirmation_dialog: ConfirmationDialog
 var help_dialog: AcceptDialog
@@ -297,6 +299,7 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 		push_warning("Manage User Data: Cannot open directory '%s' (error %d)" % [path, DirAccess.get_open_error()])
 		return
 
+	dir.include_hidden = true
 	dir.list_dir_begin()
 	var file_name := dir.get_next()
 
@@ -314,7 +317,14 @@ func populate_tree(parent_item: TreeItem, path: String) -> void:
 		item.set_checked(2, true)
 		item.set_editable(2, true)
 
-		if dir.current_is_dir():
+		if dir.current_is_dir() and dir.is_link(file_name):
+			# Never descend into a symlinked folder: it may point outside user://.
+			item.set_text(1, "Link")
+			item.set_icon(0, base.get_theme_icon("FileBroken", "EditorIcons"))
+			item.set_tooltip_text(0, "%s
+Type: Symbolic link (removed as a link, target untouched)
+Path: %s" % [file_name, full_path])
+		elif dir.current_is_dir():
 			item.set_text(1, "Folder")
 			item.set_icon(0, base.get_theme_icon("Folder", "EditorIcons"))
 			item.set_icon_modulate(0, Color(1, 0.71, 0.26, 1))
@@ -464,14 +474,12 @@ func update_warning_label() -> void:
 	if warning_label == null:
 		return
 
-	var items_to_delete: Array = []
-	var total_size_ref := [0]
-	var file_count_ref := [0]
-	var folder_count_ref := [0]
-
-	collect_checked_items_with_stats(
-		tree.get_root(), items_to_delete, total_size_ref, file_count_ref, folder_count_ref
-	)
+	# Describe exactly what delete_selected_items() would remove.
+	var items_to_delete := UserDataOps.plan_deletion(tree.get_root())
+	var stats := UserDataOps.describe(items_to_delete)
+	var file_count_ref := [stats.files]
+	var folder_count_ref := [stats.folders]
+	var total_size_ref := [stats.bytes]
 
 	var base := EditorInterface.get_base_control()
 
@@ -500,62 +508,10 @@ func update_warning_label() -> void:
 	_update_select_all_checkbox()
 
 
-## Collects checked items and accumulates size/count statistics.
-func collect_checked_items_with_stats(
-	item: TreeItem,
-	result: Array,
-	total_size_ref: Array,
-	file_count_ref: Array,
-	folder_count_ref: Array
-) -> void:
-	if item == null:
-		return
-
-	if item.is_checked(2):
-		var path = item.get_metadata(1)
-		if path:
-			result.append(path)
-			var is_folder: bool = item.get_text(1).begins_with("Folder")
-			if is_folder:
-				folder_count_ref[0] += 1
-				total_size_ref[0] += calculate_folder_size(path)
-				return
-			else:
-				file_count_ref[0] += 1
-				var file := FileAccess.open(path, FileAccess.READ)
-				if file:
-					total_size_ref[0] += file.get_length()
-					file.close()
-
-	var child := item.get_first_child()
-	while child != null:
-		collect_checked_items_with_stats(child, result, total_size_ref, file_count_ref, folder_count_ref)
-		child = child.get_next()
-
-
 ## Returns the total byte size of all files under [param path], recursively.
-## Skips unreadable files/directories without aborting the entire calculation.
+## Skips unreadable files/directories and does not follow symlinks.
 func calculate_folder_size(path: String) -> int:
-	var total_size := 0
-	var dir := DirAccess.open(path)
-	if dir == null:
-		return 0
-
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
-	while file_name != "":
-		if file_name != "." and file_name != "..":
-			var full_path := path.path_join(file_name)
-			if dir.current_is_dir():
-				total_size += calculate_folder_size(full_path)
-			else:
-				var file := FileAccess.open(full_path, FileAccess.READ)
-				if file:
-					total_size += file.get_length()
-					file.close()
-		file_name = dir.get_next()
-	dir.list_dir_end()
-	return total_size
+	return UserDataOps.calculate_folder_size(path)
 
 
 func _on_search_changed(_new_text: String) -> void:
@@ -1112,57 +1068,11 @@ func _on_dialog_closed() -> void:
 		active_type_filters.clear()
 
 
-## Deletes all checked items, deepest paths first to avoid parent-before-child issues.
-## Returns a dictionary with "deleted" (int) and "failed" (Array[String]) for reporting.
+## Deletes what the current selection covers: only checked, visible items, and
+## a folder wholesale only when everything under it is checked and visible
+## (see user_data_ops.gd). Returns {"deleted": int, "failed": Array[String]}.
 func delete_selected_items() -> Dictionary:
-	var items_to_delete: Array = []
-	collect_checked_items(tree.get_root(), items_to_delete)
-
-	items_to_delete.sort_custom(func(a: String, b: String) -> bool:
-		return a.count("/") > b.count("/")
-	)
-
-	var deleted_count := 0
-	var failed_paths: Array[String] = []
-
-	for path: String in items_to_delete:
-		if path == "user://":
-			continue
-
-		if not FileAccess.file_exists(path) and not DirAccess.dir_exists_absolute(path):
-			push_warning("Manage User Data: Path no longer exists, skipping: %s" % path)
-			continue
-
-		var error: int
-		if DirAccess.dir_exists_absolute(path):
-			delete_directory_contents(path)
-			error = DirAccess.remove_absolute(path)
-		else:
-			error = DirAccess.remove_absolute(path)
-
-		if error != OK:
-			failed_paths.append(path)
-			push_error("Manage User Data: Failed to delete '%s' (error %d)" % [path, error])
-		else:
-			deleted_count += 1
-
-	return {"deleted": deleted_count, "failed": failed_paths}
-
-
-## Recursively collects all checked items into [param result].
-func collect_checked_items(item: TreeItem, result: Array) -> void:
-	if item == null:
-		return
-
-	if item.is_checked(2):
-		var path = item.get_metadata(1)
-		if path:
-			result.append(path)
-
-	var child := item.get_first_child()
-	while child != null:
-		collect_checked_items(child, result)
-		child = child.get_next()
+	return UserDataOps.delete_paths(UserDataOps.plan_deletion(tree.get_root()))
 
 
 ## Applies a visible border/outline to [param btn] using the editor accent color.
@@ -1243,26 +1153,6 @@ func _show_copy_feedback(btn: Button, message: String) -> void:
 
 
 ## Recursively deletes all contents inside [param path] without removing the
-## directory itself. Logs warnings for any items that fail to delete.
+## directory itself. Symlinks are removed, never followed.
 func delete_directory_contents(path: String) -> void:
-	var dir := DirAccess.open(path)
-	if dir == null:
-		push_warning("Manage User Data: Cannot open directory for deletion: '%s'" % path)
-		return
-
-	dir.list_dir_begin()
-	var file_name := dir.get_next()
-	while file_name != "":
-		if file_name != "." and file_name != "..":
-			var full_path := path.path_join(file_name)
-			if dir.current_is_dir():
-				delete_directory_contents(full_path)
-				var err := DirAccess.remove_absolute(full_path)
-				if err != OK:
-					push_warning("Manage User Data: Could not remove directory '%s' (error %d)" % [full_path, err])
-			else:
-				var err := DirAccess.remove_absolute(full_path)
-				if err != OK:
-					push_warning("Manage User Data: Could not remove file '%s' (error %d)" % [full_path, err])
-		file_name = dir.get_next()
-	dir.list_dir_end()
+	UserDataOps.delete_directory_contents(path)

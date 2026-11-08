@@ -1,4 +1,4 @@
-extends Node
+extends SceneTree
 ## Unit tests for filter/search logic used in the plugin.
 ## Tests the matching rules without requiring the editor UI.
 ## Run via: godot --headless --script tests/test_filter_logic.gd
@@ -13,7 +13,7 @@ const FILTER_JSON := 3
 const FILTER_CACHE := 4
 
 
-func _ready() -> void:
+func _initialize() -> void:
 	print("=== test_filter_logic ===")
 	test_no_filters_matches_everything()
 	test_search_term_matching()
@@ -28,7 +28,7 @@ func _ready() -> void:
 	test_depth_sort_for_deletion()
 	test_propagate_check_logic()
 	_print_summary()
-	get_tree().quit(0 if _fail_count == 0 else 1)
+	quit(0 if _fail_count == 0 else 1)
 
 
 # Replicate the plugin's matching logic for isolated testing
