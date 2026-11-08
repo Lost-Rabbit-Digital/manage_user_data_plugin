@@ -69,7 +69,9 @@ Click the **User Data** button in the editor toolbar to open the dialog.
 
 <img src="screenshot_2.png" width="512" alt="File tree screenshot">
 
-The status bar shows a live count and total size of selected items before you confirm. Deletion is permanent and cannot be undone.
+The status bar shows a live count and total size of exactly what will be deleted before you confirm. Deletion is permanent and cannot be undone.
+
+**What gets deleted:** only items that are checked **and** visible. Anything hidden by the search box or type filter is never deleted, and unchecking a file inside a checked folder protects that file: the folder is then kept and only its other checked items are removed. A folder is removed wholesale only when it and everything under it is checked and visible. Nothing outside `user://` is touched, and symbolic links are removed as links without following them.
 
 <img src="screenshot_5.png" width="512" height="256" alt="Status bar">
 
@@ -113,7 +115,7 @@ Recursively scans a directory and populates the `Tree` control with items. Each 
 - Assigns icons based on file extension
 
 #### `delete_selected_items() → Dictionary`
-Deletes all checked items in the tree. Sorts paths deepest-first to avoid parent-before-child conflicts.
+Deletes what the current selection covers (see *What gets deleted* above). Planning and removal live in `user_data_ops.gd` (`plan_deletion()`, `delete_paths()`), which is editor-independent and tested headless.
 
 **Returns:** `{"deleted": int, "failed": Array[String]}`
 
@@ -177,11 +179,8 @@ Returns an appropriate editor theme icon for the file type.
 #### `propagate_check_state(item: TreeItem, checked: bool) → void`
 Recursively applies a checked/unchecked state to all children of the given tree item.
 
-#### `collect_checked_items(item: TreeItem, result: Array) → void`
-Collects full paths of all checked items into the `result` array.
-
-#### `collect_checked_items_with_stats(item, result, total_size_ref, file_count_ref, folder_count_ref) → void`
-Like `collect_checked_items`, but also accumulates total size, file count, and folder count via reference arrays.
+#### `UserDataOps.plan_deletion(root: TreeItem) → Array[String]`
+The minimal list of paths a delete would remove (replaces `collect_checked_items` / `collect_checked_items_with_stats`, which ignored filters and partial folder selections). `UserDataOps.describe(paths)` returns `{files, folders, bytes}` for the status bar.
 
 #### `update_warning_label() → void`
 Updates the status bar with the current selection count, size, and warning text.
@@ -365,7 +364,7 @@ The test suite validates the plugin's core logic — formatting, filtering, file
 
 ### Prerequisites
 
-- Godot 4.3+ in your `PATH` (or set `GODOT_BIN` environment variable)
+- Godot 4.7 in your `PATH` (or set `GODOT_BIN` environment variable). The addon itself still runs on 4.3+.
 
 ### Run All Tests
 
@@ -380,7 +379,10 @@ godot --headless --path . --script tests/test_format_file_size.gd
 godot --headless --path . --script tests/test_file_type_label.gd
 godot --headless --path . --script tests/test_filter_logic.gd
 godot --headless --path . --script tests/test_file_operations.gd
+godot --headless --path . --script tests/test_deletion_safety.gd
 ```
+
+`run_all.sh` also parse-checks every addon script and fails a suite that exits without printing its summary. CI (`.github/workflows/tests.yml`) runs it on Godot 4.7.
 
 ### Test Coverage
 
@@ -389,6 +391,7 @@ godot --headless --path . --script tests/test_file_operations.gd
 | `test_format_file_size.gd` | Byte/KB/MB formatting, boundary values |
 | `test_file_type_label.gd` | Extension → label mapping, case insensitivity, unknown extensions |
 | `test_filter_logic.gd` | Search matching, type filters, combined filters, depth sorting, propagation |
+| `test_deletion_safety.gd` | The plugin's real deletion code against real files: unchecked children survive, filtered-out items survive, whole-folder deletes, refusal outside `user://`, dotfiles, status-bar stats |
 | `test_file_operations.gd` | JSON/CFG/binary save+load, corrupted files, empty files, recursive delete, version migration, folder size calculation |
 
 ### CI Integration
