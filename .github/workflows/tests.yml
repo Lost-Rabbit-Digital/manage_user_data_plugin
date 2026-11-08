@@ -1,0 +1,22 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  godot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v1
+        with:
+          version: 4.7.0
+          use-dotnet: false
+      - name: Import
+        run: |
+          godot --headless --editor --quit || true
+          godot --headless --import
+      - name: Parse check and test suites
+        run: GODOT_BIN=godot bash tests/run_all.sh

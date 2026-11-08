@@ -1,4 +1,4 @@
-extends Node
+extends SceneTree
 ## Integration tests for file save/load/delete/migrate operations.
 ## Tests actual file I/O against a temporary directory under user://test_manage_user_data/.
 ## Run via: godot --headless --script tests/test_file_operations.gd
@@ -9,7 +9,7 @@ var _pass_count := 0
 var _fail_count := 0
 
 
-func _ready() -> void:
+func _initialize() -> void:
 	print("=== test_file_operations ===")
 	_setup()
 
@@ -48,7 +48,7 @@ func _ready() -> void:
 
 	_teardown()
 	_print_summary()
-	get_tree().quit(0 if _fail_count == 0 else 1)
+	quit(0 if _fail_count == 0 else 1)
 
 
 # ── Setup / Teardown ──────────────────────────────────────────────────────────

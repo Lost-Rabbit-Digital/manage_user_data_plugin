@@ -1,4 +1,4 @@
-extends Node
+extends SceneTree
 ## Unit tests for get_file_type_label().
 ## Run via: godot --headless --script tests/test_file_type_label.gd
 
@@ -6,14 +6,14 @@ var _pass_count := 0
 var _fail_count := 0
 
 
-func _ready() -> void:
+func _initialize() -> void:
 	print("=== test_file_type_label ===")
 	test_known_extensions()
 	test_case_insensitivity()
 	test_unknown_extension()
 	test_no_extension()
 	_print_summary()
-	get_tree().quit(0 if _fail_count == 0 else 1)
+	quit(0 if _fail_count == 0 else 1)
 
 
 func get_file_type_label(file_name: String) -> String:
