@@ -11,10 +11,10 @@ config_version=5
 [application]
 
 config/name="manage_user_data_plugin"
-config/version="2.5.6"
+config/version="2.6.0"
 config/tags=PackedStringArray("active", "open_sourced", "plugin", "utility")
 run/main_scene="uid://kdoodofub67l"
-config/features=PackedStringArray("4.5", "Forward Plus")
+config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="uid://dbdiskknw1asj"
 
 [editor_plugins]
